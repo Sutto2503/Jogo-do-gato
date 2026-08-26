@@ -64,6 +64,7 @@ var wind_lift_force: float = 0.0
 var target_grapple_point: Node2D = null
 var is_grappling: bool = false
 var grapple_target_pos: Vector2 = Vector2.ZERO
+var grapple_cooldown: float = 0.0
 
 # Ataque
 var is_attacking: bool = false
@@ -122,12 +123,10 @@ func _physics_process(delta: float) -> void:
 
 func process_ground_movement(delta: float) -> void:
 	var move_dir = Input.get_axis("move_left", "move_right")
-	var is_sprinting = Input.is_action_pressed("sprint")
-	var target_speed = sprint_speed if is_sprinting else walk_speed
 	
 	if move_dir != 0:
-		velocity.x = move_toward(velocity.x, move_dir * target_speed, acceleration * delta)
-		current_state = State.RUN if is_sprinting else State.WALK
+		velocity.x = move_toward(velocity.x, move_dir * sprint_speed, acceleration * delta)
+		current_state = State.RUN
 		sprite.flip_h = move_dir < 0
 	else:
 		velocity.x = move_toward(velocity.x, 0, friction * delta)
@@ -314,11 +313,14 @@ func stop_glide() -> void:
 		current_state = State.FALL
 
 func try_grapple() -> void:
+	if grapple_cooldown > 0.0:
+		return
 	var point = find_best_grapple_point()
 	if point:
 		target_grapple_point = point
 		grapple_target_pos = point.global_position
 		is_grappling = true
+		grapple_cooldown = 0.5
 		current_state = State.GRAPPLE_PULL
 		can_double_jump = true
 		current_squash = Vector2(0.85, 1.25)
@@ -328,6 +330,7 @@ func try_grapple() -> void:
 
 func release_grapple_with_boost(last_dir: Vector2) -> void:
 	is_grappling = false
+	grapple_cooldown = 0.5
 	if grapple_line:
 		grapple_line.visible = false
 	# Lançamento com impulso para cima e na direção
@@ -340,6 +343,7 @@ func release_grapple_with_boost(last_dir: Vector2) -> void:
 
 func cancel_grapple() -> void:
 	is_grappling = false
+	grapple_cooldown = 0.5
 	if grapple_line:
 		grapple_line.visible = false
 	current_state = State.FALL if not is_on_floor() else State.IDLE
@@ -403,6 +407,8 @@ func update_timers(delta: float) -> void:
 		jump_buffer_timer -= delta
 	if drop_through_timer > 0:
 		drop_through_timer -= delta
+	if grapple_cooldown > 0:
+		grapple_cooldown -= delta
 	if screen_shake_timer > 0:
 		screen_shake_timer -= delta
 		if screen_shake_timer <= 0:

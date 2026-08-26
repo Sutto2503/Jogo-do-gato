@@ -640,6 +640,7 @@ class MetroidvaniaWorldGame {
       grappleTarget: null,
       grappleTargetPos: { x: 0, y: 0 },
       grapplePullSpeed: 18.5,
+      grappleCooldown: 0,     // 0.5s cooldown para evitar spam
       // Vida & Energia (Hollow Knight Masks)
       health: 100,
       maxHealth: 100,
@@ -664,18 +665,25 @@ class MetroidvaniaWorldGame {
     this.isPaused = false;
     this.activeGrappleTarget = null;
 
-    // Plataformas dos 4 Setores (Boxes com One-Way e Ponte Ajustada)
+    // Plataformas dos 4 Setores (Alinhadas perfeitamente com a arte 4K)
     this.platforms = [
-      // SETOR 1: Vila & Pagoda (Oeste)
+      // SETOR 1: Vila, Casas Tradicionais & Pagoda Vermelha
       { x: 0, y: 1680, w: 1750, h: 200, type: 'village_ground', solid: true },
-      // Telhado das casas (One-way)
-      { x: 80, y: 1530, w: 220, h: 20, type: 'house_roof', oneWay: true },
-      // Telhados da Pagoda de 3 Andares (One-way - drop com S+Space)
-      { x: 520, y: 1430, w: 280, h: 20, type: 'pagoda_roof_1', oneWay: true },
-      { x: 550, y: 1180, w: 240, h: 20, type: 'pagoda_roof_2', oneWay: true },
-      { x: 600, y: 920,  w: 180, h: 20, type: 'pagoda_roof_3', oneWay: true },
+      
+      // Casas Tradicionais à esquerda da Pagoda (One-way escaláveis)
+      { x: 40,  y: 1470, w: 360, h: 20, type: 'house_eave_1', oneWay: true },
+      { x: 90,  y: 1360, w: 260, h: 20, type: 'house_ridge_1', oneWay: true },
+      { x: 410, y: 1460, w: 330, h: 20, type: 'house_eave_2', oneWay: true },
+      { x: 740, y: 1440, w: 230, h: 20, type: 'house_eave_3', oneWay: true },
+      { x: 770, y: 1365, w: 180, h: 20, type: 'house_ridge_3', oneWay: true },
 
-      // SETOR 2: Ponte de Pedra & Rio Sagrado (Centro) - Colisão Sólida Exata x in [1750, 2520], y ~ 1535
+      // Telhados da Pagoda Vermelha (3 Andares + Cume perfeitamente centralizados)
+      { x: 960,  y: 1420, w: 640, h: 22, type: 'pagoda_tier_1', oneWay: true },
+      { x: 1020, y: 1165, w: 520, h: 22, type: 'pagoda_tier_2', oneWay: true },
+      { x: 1080, y: 905,  w: 400, h: 22, type: 'pagoda_tier_3', oneWay: true },
+      { x: 1220, y: 650,  w: 120, h: 20, type: 'pagoda_spire', oneWay: true },
+
+      // SETOR 2: Ponte de Pedra & Rio Sagrado (Centro) - Colisão Sólida Exata x in [1750, 2520]
       { x: 1750, y: 1535, w: 770, h: 45, type: 'stone_bridge', solid: true },
 
       // SETOR 3: Penhascos & Natureza Selvagem (Leste)
@@ -693,22 +701,27 @@ class MetroidvaniaWorldGame {
 
     // Âncoras do Gancho de Escalada (Grappling Anchors com Retículo)
     this.grappleAnchors = [
-      // Lanternas da Pagoda e Vila
-      { id: 'g_lantern_1', x: 190, y: 1470, type: 'lantern', name: 'Lanterna da Casa' },
-      { id: 'g_lantern_2', x: 660, y: 1370, type: 'lantern', name: 'Lanterna Pagoda Nível 1' },
-      { id: 'g_lantern_3', x: 670, y: 1140, type: 'lantern', name: 'Lanterna Pagoda Nível 2' },
-      { id: 'g_lantern_4', x: 690, y: 880,  type: 'lantern', name: 'Lanterna Pagoda Cume' },
+      // Lanternas da Pagoda Vermelha
+      { id: 'g_pagoda_top_l', x: 1090, y: 885,  type: 'lantern', name: 'Lanterna Pagoda Topo Esq' },
+      { id: 'g_pagoda_top_r', x: 1470, y: 885,  type: 'lantern', name: 'Lanterna Pagoda Topo Dir' },
+      { id: 'g_pagoda_mid_l', x: 1030, y: 1145, type: 'lantern', name: 'Lanterna Pagoda Meio Esq' },
+      { id: 'g_pagoda_mid_r', x: 1530, y: 1145, type: 'lantern', name: 'Lanterna Pagoda Meio Dir' },
+      { id: 'g_pagoda_bot_l', x: 970,  y: 1400, type: 'lantern', name: 'Lanterna Pagoda Base Esq' },
+      // Lanternas das Casas Tradicionais da Vila
+      { id: 'g_house_3',      x: 860,  y: 1410, type: 'lantern', name: 'Lanterna da Entrada' },
+      { id: 'g_house_2',      x: 580,  y: 1430, type: 'lantern', name: 'Lanterna da Vila' },
+      { id: 'g_house_1',      x: 230,  y: 1440, type: 'lantern', name: 'Lanterna da Casa Oeste' },
       // Anéis de Pedra da Ponte
-      { id: 'g_bridge_1',  x: 1950, y: 1470, type: 'ring', name: 'Anel do Arco Ocidental' },
-      { id: 'g_bridge_2',  x: 2320, y: 1470, type: 'ring', name: 'Anel do Arco Oriental' },
+      { id: 'g_bridge_1',     x: 1880, y: 1515, type: 'ring',    name: 'Anel do Arco Ocidental' },
+      { id: 'g_bridge_2',     x: 2390, y: 1515, type: 'ring',    name: 'Anel do Arco Oriental' },
       // Penhasco e Caverna
-      { id: 'g_cliff_1',   x: 3050, y: 980,  type: 'overhang', name: 'Saliente do Penhasco' },
-      { id: 'g_cave_1',    x: 2150, y: 1800, type: 'cavern', name: 'Estalactite Rúnica' },
-      { id: 'g_cave_2',    x: 2600, y: 1860, type: 'cavern', name: 'Gancho Subterrâneo' },
+      { id: 'g_cliff_1',      x: 3050, y: 980,  type: 'overhang', name: 'Saliente do Penhasco' },
+      { id: 'g_cave_1',       x: 2150, y: 1800, type: 'cavern',  name: 'Estalactite Rúnica' },
+      { id: 'g_cave_2',       x: 2600, y: 1860, type: 'cavern',  name: 'Gancho Subterrâneo' },
       // Pedras Flutuantes
-      { id: 'g_stone_1',   x: 2540, y: 860,  type: 'floating_stone', baseY: 860, phase: 0 },
-      { id: 'g_stone_2',   x: 2710, y: 640,  type: 'floating_stone', baseY: 640, phase: 1.8 },
-      { id: 'g_stone_3',   x: 2810, y: 420,  type: 'floating_stone', baseY: 420, phase: 3.2 }
+      { id: 'g_stone_1',      x: 2540, y: 860,  type: 'floating_stone', baseY: 860, phase: 0 },
+      { id: 'g_stone_2',      x: 2710, y: 640,  type: 'floating_stone', baseY: 640, phase: 1.8 },
+      { id: 'g_stone_3',      x: 2810, y: 420,  type: 'floating_stone', baseY: 420, phase: 3.2 }
     ];
 
     // 🪷 Plataformas Efêmeras de Lótus (Ori Style)
@@ -1052,9 +1065,6 @@ class MetroidvaniaWorldGame {
       p.scaleY = 1.30;
       this.spawnDust(p.x + 35, p.y + 80, 12, '#fbbf24');
       sfx.playJump(true);
-    } else if (p.vy > 0) {
-      p.isGliding = !p.isGliding;
-      if (p.isGliding) sfx.playGlide();
     }
   }
 
@@ -1063,7 +1073,7 @@ class MetroidvaniaWorldGame {
     const p = this.player;
     const px = p.x + 35;
     const py = p.y + 50;
-    const maxRange = 420;
+    const maxRange = 440;
 
     let bestTarget = null;
     let minScore = Infinity;
@@ -1085,12 +1095,11 @@ class MetroidvaniaWorldGame {
         // Priorizar pontos à frente e acima do personagem
         const dirX = dx / dist;
         const dirY = dy / dist;
-        const forwardScore = dirX * p.facing; // 1 = frente, -1 = costas
-        const upwardScore = -dirY;            // 1 = acima, -1 = abaixo
+        const forwardScore = dirX * p.facing;
+        const upwardScore = -dirY;
 
-        // Penalizar alvos atrás ou muito abaixo
-        if (forwardScore > -0.3 && upwardScore > -0.4) {
-          const score = dist - forwardScore * 80 - upwardScore * 60;
+        if (forwardScore > -0.35 && upwardScore > -0.45) {
+          const score = dist - forwardScore * 85 - upwardScore * 65;
           if (score < minScore) {
             minScore = score;
             bestTarget = { ...anchor, currentX: ax, currentY: ay };
@@ -1111,7 +1120,7 @@ class MetroidvaniaWorldGame {
       if (dist <= maxRange) {
         const dirX = dx / dist;
         const forwardScore = dirX * p.facing;
-        const score = dist - forwardScore * 70;
+        const score = dist - forwardScore * 75;
         if (score < minScore) {
           minScore = score;
           bestTarget = { id: wisp.id, type: 'wisp', color: wisp.color, currentX: curX, currentY: curY };
@@ -1124,12 +1133,14 @@ class MetroidvaniaWorldGame {
 
   tryGrapplingHook() {
     const p = this.player;
-    const target = this.findBestGrappleTarget();
+    if (p.grappleCooldown > 0) return; // Cooldown ativo de 0.5s
 
+    const target = this.findBestGrappleTarget();
     if (target) {
       p.isGrappling = true;
       p.grappleTarget = target;
       p.grappleTargetPos = { x: target.currentX, y: target.currentY };
+      p.grappleCooldown = 0.5; // Inicia cooldown de 0.5s
       p.canDoubleJump = true;
       p.isGliding = false;
       p.scaleX = 0.85;
@@ -1157,6 +1168,7 @@ class MetroidvaniaWorldGame {
   releaseGrappleLaunch() {
     const p = this.player;
     p.isGrappling = false;
+    p.grappleCooldown = 0.5; // Garante cooldown ao desengatar
 
     // Lançamento com impulso para cima e na direção
     p.vy = -14.8;
@@ -1442,6 +1454,7 @@ class MetroidvaniaWorldGame {
     if (p.coyoteTimer > 0) p.coyoteTimer -= dt;
     if (p.jumpBufferTimer > 0) p.jumpBufferTimer -= dt;
     if (p.dropThroughTimer > 0) p.dropThroughTimer -= dt;
+    if (p.grappleCooldown > 0) p.grappleCooldown -= dt;
     if (p.dashCooldown > 0) p.dashCooldown--;
     if (p.isDashing) {
       p.dashTimer--;
@@ -1455,6 +1468,17 @@ class MetroidvaniaWorldGame {
     // Squash and stretch lerp de volta ao normal
     p.scaleX += (1.0 - p.scaleX) * 0.16;
     p.scaleY += (1.0 - p.scaleY) * 0.16;
+
+    // Planador Estável: Ativa e mantém aberto enquanto o botão de pulo estiver SEGURADO no ar caindo
+    const isHoldingJump = this.keys['Space'] || this.keys['KeyW'] || this.keys['ArrowUp'];
+    if (!p.isGrounded && !p.isGrappling && isHoldingJump && p.vy >= 0) {
+      if (!p.isGliding) {
+        p.isGliding = true;
+        sfx.playGlide();
+      }
+    } else if (p.isGrounded || !isHoldingJump) {
+      p.isGliding = false;
+    }
 
     // Atualizar retículo de auto-targeting
     this.activeGrappleTarget = this.findBestGrappleTarget();
@@ -1724,15 +1748,13 @@ class MetroidvaniaWorldGame {
     } else if (!p.isGrounded) {
       p.state = 'jump';
       p.frameIndex = p.vy < 0 ? 0 : 2;
-    } else if (Math.abs(p.vx) > 0.4) {
-      const isFast = Math.abs(p.vx) > p.speed;
-      p.state = isFast ? 'run' : 'walk';
+    } else if (Math.abs(p.vx) > 0.3) {
+      p.state = 'run';
       p.animTime += 1;
-      const rate = isFast ? 5 : 7;
-      const count = (frameImages[p.state] || []).length;
+      const count = (frameImages['run'] || []).length;
       if (count > 0) {
-        p.frameIndex = Math.floor(p.animTime / rate) % count;
-        if (p.animTime % (rate * 2) === 0) sfx.playStep();
+        p.frameIndex = Math.floor(p.animTime / 6) % count;
+        if (p.animTime % 12 === 0) sfx.playStep();
       }
     } else {
       p.state = 'idle';
