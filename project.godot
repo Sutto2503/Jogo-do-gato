@@ -6,11 +6,11 @@ config_version=5
 
 [application]
 
-config/name="Gatinho Samurai: Ecos Misticos"
-config/description="Jogo Metroidvania 2D com tematica asiatica-samurai e misticismo"
-run/main_scene="res://scenes/levels/main_level.tscn"
+config/name="Gatinho Samurai"
+config/description="Personagem Gatinho Samurai com controle de movimentação e animações 2D"
+run/main_scene="res://scenes/player/player.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
-config/icon="res://assets/transparent_cats/gato_samurai_1.png"
+config/icon="res://assets/frames/walk/walk_0.png"
 
 [display]
 
@@ -53,25 +53,11 @@ attack={
 , Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"button_mask":0,"position":Vector2(0, 0),"global_position":Vector2(0, 0),"factor":1.0,"button_index":1,"canceled":false,"pressed":false,"double_click":false,"script":null)
 ]
 }
-grapple={
-"deadzone": 0.5,
-"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":75,"physical_keycode":0,"key_label":0,"unicode":107,"location":0,"echo":false,"script":null)
-, Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"button_mask":0,"position":Vector2(0, 0),"global_position":Vector2(0, 0),"factor":1.0,"button_index":2,"canceled":false,"pressed":false,"double_click":false,"script":null)
-]
-}
-glide={
-"deadzone": 0.5,
-"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":83,"physical_keycode":0,"key_label":0,"unicode":115,"location":0,"echo":false,"script":null)
-]
-}
 
 [layer_names]
 
 2d_physics/layer_1="World"
 2d_physics/layer_2="Player"
-2d_physics/layer_3="Interactables"
-2d_physics/layer_4="GrapplePoints"
-2d_physics/layer_5="WindCurrents"
 
 [rendering]
 
