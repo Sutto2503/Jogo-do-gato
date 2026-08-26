@@ -144,7 +144,7 @@ body.clean-ui {
 }
 
 /* ==========================================================================
-   MODAIS
+   MODAIS & AMULETOS
    ========================================================================== */
 .modal-overlay {
   position: fixed;
@@ -159,13 +159,14 @@ body.clean-ui {
 .modal-overlay.active { display: flex; }
 
 .modal-card {
-  width: 90%; max-width: 400px;
+  width: 90%; max-width: 440px;
   background: #0b111e;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px;
   padding: 20px;
 }
 .modal-card.pause-card { max-width: 320px; text-align: center; }
+.modal-card.amulets-card { max-width: 520px; }
 .pause-menu-list { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
 
 .modal-header {
@@ -188,6 +189,51 @@ body.clean-ui {
 .btn-primary { background: #0284c7; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; font-weight: 700; cursor: pointer; font-size: 12px; }
 .btn-sm { padding: 4px 8px; font-size: 11px; font-weight: 700; border-radius: 4px; border: none; cursor: pointer; }
 .btn-danger { background: #991b1b; color: #fff; }
+
+/* Amulet Inventory */
+.amulet-slots-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+.active-slots-display { display: flex; gap: 8px; }
+.notch-slot {
+  width: 28px; height: 28px;
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.notch-slot.equipped {
+  border: 1px solid #38bdf8;
+  background: rgba(56, 189, 248, 0.15);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+}
+
+.amulets-grid { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
+.amulet-item {
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 12px; border-radius: 8px;
+}
+.amulet-item.equipped { border-color: #38bdf8; background: rgba(56, 189, 248, 0.08); }
+.amulet-icon { font-size: 22px; width: 34px; text-align: center; }
+.amulet-info { flex: 1; }
+.amulet-info h4 { font-size: 12px; font-weight: 700; color: #f8fafc; }
+.amulet-info p { font-size: 10px; color: var(--text-muted); }
+.btn-amulet-toggle {
+  background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff; padding: 5px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;
+}
+.btn-amulet-toggle.active { background: #0284c7; border-color: #38bdf8; }
 
 /* ==========================================================================
    VIEWPORT DO JOGO & CANVAS LIMPO
@@ -239,7 +285,6 @@ body.clean-ui {
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.7));
 }
 
-/* Orbe / Recipiente de Alma (Energia Mística) */
 .soul-orb {
   position: relative;
   width: 58px;
@@ -278,7 +323,6 @@ body.clean-ui {
   margin-top: 4px;
 }
 
-/* Máscaras de Vida (Estilo Hollow Knight Bone Masks) */
 .masks-container {
   display: flex;
   gap: 6px;
@@ -296,7 +340,6 @@ body.clean-ui {
   position: relative;
 }
 
-/* Detalhe interior dos olhos da máscara */
 .mask-unit::before, .mask-unit::after {
   content: "";
   position: absolute;
@@ -316,7 +359,6 @@ body.clean-ui {
   transform: scale(0.85);
 }
 
-/* Contador de Colecionáveis (Geo / Pergaminhos) */
 .scroll-counter {
   display: flex;
   align-items: center;
@@ -324,20 +366,110 @@ body.clean-ui {
   margin-left: 2px;
 }
 
-.scroll-icon {
-  font-size: 13px;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+.scroll-icon { font-size: 13px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+.scroll-number { font-family: var(--font-serif); font-size: 14px; font-weight: 800; color: #f8fafc; }
+.keystone-hud { font-family: var(--font-serif); font-size: 12px; font-weight: 700; color: #fbbf24; }
+
+/* ==========================================================================
+   CAIXA DE DIÁLOGO MINIMALISTA DE NPC
+   ========================================================================== */
+.dialogue-box-overlay {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  width: 90%;
+  max-width: 620px;
+  pointer-events: none;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 200;
+}
+.dialogue-box-overlay.active {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
 }
 
-.scroll-number {
+.dialogue-card {
+  background: rgba(11, 17, 30, 0.94);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
+  position: relative;
+}
+
+.dialogue-portrait {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid #38bdf8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+
+.dialogue-text-area { flex: 1; }
+.dialogue-text-area h4 {
   font-family: var(--font-serif);
-  font-size: 14px;
-  font-weight: 800;
-  color: #f8fafc;
-  letter-spacing: 1px;
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: #38bdf8;
+  margin-bottom: 4px;
+}
+.dialogue-text-area p {
+  font-size: 12px;
+  color: #e2e8f0;
+  line-height: 1.5;
 }
 
-/* Notificação discreta de salvamento */
+.dialogue-prompt-hint {
+  position: absolute;
+  bottom: 8px; right: 14px;
+  font-size: 9px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* Prompt de Interação Flutuante */
+.interact-prompt {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 11px;
+  color: #fff;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.interact-prompt.show { opacity: 1; }
+.prompt-key {
+  background: #38bdf8;
+  color: #000;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 9px;
+}
+
 .save-toast {
   position: absolute;
   bottom: 24px;
@@ -357,140 +489,45 @@ body.clean-ui {
   pointer-events: none;
   transition: all 0.3s ease;
 }
-.save-toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
+.save-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* Botão discreto no canto superior direito */
-.btn-corner-tool {
+.corner-tools {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 20px; right: 20px;
+  display: flex; gap: 8px;
+}
+.btn-corner-tool {
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #fff;
-  width: 36px;
-  height: 36px;
+  width: 36px; height: 36px;
   border-radius: 50%;
   cursor: pointer;
   opacity: 0.4;
   transition: opacity 0.2s ease, background 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   font-size: 14px;
 }
-.btn-corner-tool:hover {
-  opacity: 1;
-  background: rgba(255, 255, 255, 0.15);
-}
+.btn-corner-tool:hover { opacity: 1; background: rgba(255, 255, 255, 0.15); }
 
-/* ==========================================================================
-   ESTÚDIO DE ANIMAÇÕES
-   ========================================================================== */
-#tab-studio {
-  flex-direction: column;
-  padding: 20px;
-  background: #060913;
-}
-
-.studio-topbar {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 12px;
-}
-
-.studio-topbar h2 {
-  font-family: var(--font-serif);
-  font-size: 16px;
-  letter-spacing: 2px;
-}
-
-.studio-layout {
-  display: grid;
-  grid-template-columns: 180px 1fr;
-  gap: 16px;
-  width: 100%;
-  max-width: 1100px;
-}
-
+/* Estúdio */
+#tab-studio { flex-direction: column; padding: 20px; background: #060913; }
+.studio-topbar { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+.studio-topbar h2 { font-family: var(--font-serif); font-size: 16px; letter-spacing: 2px; }
+.studio-layout { display: grid; grid-template-columns: 180px 1fr; gap: 16px; width: 100%; max-width: 1100px; }
 .anim-cards { display: flex; flex-direction: column; gap: 4px; }
-.anim-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #94a3b8;
-  padding: 8px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  text-align: left;
-}
-.anim-card.active {
-  border-color: #38bdf8;
-  color: #fff;
-  background: rgba(56, 189, 248, 0.1);
-}
-
-.studio-viewport-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.stage-container {
-  background: #020408;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  height: 320px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.timeline-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  padding: 6px 10px;
-  border-radius: 6px;
-}
-
+.anim-card { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); color: #94a3b8; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-family: var(--font-mono); font-size: 12px; text-align: left; }
+.anim-card.active { border-color: #38bdf8; color: #fff; background: rgba(56, 189, 248, 0.1); }
+.studio-viewport-panel { display: flex; flex-direction: column; gap: 10px; }
+.stage-container { background: #020408; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; height: 320px; display: flex; align-items: center; justify-content: center; }
+.timeline-bar { display: flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.03); padding: 6px 10px; border-radius: 6px; }
 .timeline-controls { display: flex; gap: 4px; }
-.btn-tool {
-  background: rgba(255, 255, 255, 0.08);
-  border: none;
-  color: #fff;
-  padding: 4px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-}
-
+.btn-tool { background: rgba(255, 255, 255, 0.08); border: none; color: #fff; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
 .timeline-scrubber { flex: 1; }
 .scrub-track { display: flex; gap: 2px; }
-.scrub-segment {
-  flex: 1;
-  height: 14px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  cursor: pointer;
-}
+.scrub-segment { flex: 1; height: 14px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; cursor: pointer; }
 .scrub-segment.active { background: #38bdf8; }
-
 .frame-thumbnails { display: flex; gap: 4px; overflow-x: auto; padding: 4px 0; }
-.thumb-card {
-  width: 50px; height: 60px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
+.thumb-card { width: 50px; height: 60px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 .thumb-card.active { border-color: #38bdf8; }
 .thumb-card img { max-width: 100%; max-height: 45px; image-rendering: pixelated; }

@@ -89,6 +89,64 @@
     </div>
   </div>
 
+  <!-- MODAL DE AMULETOS / TALISMÃS (TAB OU FERREIRA) -->
+  <div id="amulets-modal" class="modal-overlay">
+    <div class="modal-card amulets-card">
+      <div class="modal-header">
+        <h3>AMULETOS MÍSTICOS</h3>
+        <button id="btn-close-amulets" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="amulet-slots-row">
+        <span>ENCAIXES ATIVOS (2 MÁX):</span>
+        <div class="active-slots-display" id="active-slots-display">
+          <div class="notch-slot empty" id="notch-0"></div>
+          <div class="notch-slot empty" id="notch-1"></div>
+        </div>
+      </div>
+      <div class="amulets-grid" id="amulets-grid">
+        <!-- Amuleto 1 -->
+        <div class="amulet-item" data-amulet="storm_claw">
+          <div class="amulet-icon">🗡️</div>
+          <div class="amulet-info">
+            <h4>Garra da Tempestade</h4>
+            <p>Alcance do corte da Katana aumentado em +40%.</p>
+          </div>
+          <button class="btn-amulet-toggle" data-amulet="storm_claw">Equipar</button>
+        </div>
+
+        <!-- Amuleto 2 -->
+        <div class="amulet-item" data-amulet="lotus_wings">
+          <div class="amulet-icon">🌸</div>
+          <div class="amulet-info">
+            <h4>Asas de Lótus</h4>
+            <p>Planador +50% veloz e queda 80% mais lenta.</p>
+          </div>
+          <button class="btn-amulet-toggle" data-amulet="lotus_wings">Equipar</button>
+        </div>
+
+        <!-- Amuleto 3 -->
+        <div class="amulet-item" data-amulet="spirit_eye">
+          <div class="amulet-icon">👁️</div>
+          <div class="amulet-info">
+            <h4>Olho dos Ancestrais</h4>
+            <p>Atração magnética de almas e revela passagens secretas.</p>
+          </div>
+          <button class="btn-amulet-toggle" data-amulet="spirit_eye">Equipar</button>
+        </div>
+
+        <!-- Amuleto 4 -->
+        <div class="amulet-item" data-amulet="shadow_dash">
+          <div class="amulet-icon">💨</div>
+          <div class="amulet-info">
+            <h4>Passo Fantasma</h4>
+            <p>Dash com Shift concede invulnerabilidade e rastro de sombra.</p>
+          </div>
+          <button class="btn-amulet-toggle" data-amulet="shadow_dash">Equipar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- CONTAINER PRINCIPAL DO JOGO -->
   <div class="game-viewport-wrapper">
     <!-- JOGO CANVAS -->
@@ -98,14 +156,14 @@
 
         <!-- HUD MINIMALISTA ESTILO HOLLOW KNIGHT -->
         <div class="hk-hud">
-          <!-- Orbe / Vaso de Alma (Energia/Magia) -->
+          <!-- Orbe / Vaso de Alma -->
           <div class="soul-orb" id="soul-orb">
             <div class="soul-liquid" id="soul-liquid" style="height: 100%;"></div>
             <div class="soul-glass-glare"></div>
           </div>
 
           <div class="hud-center-stack">
-            <!-- Máscaras / Cristais de Vida (Estilo Hollow Knight Masks) -->
+            <!-- Máscaras de Vida -->
             <div class="masks-container" id="masks-container">
               <div class="mask-unit full"></div>
               <div class="mask-unit full"></div>
@@ -114,18 +172,39 @@
               <div class="mask-unit full"></div>
             </div>
 
-            <!-- Contador Sutil de Colecionáveis (Geo / Pergaminhos) -->
+            <!-- Contador de Colecionáveis e Chaves -->
             <div class="scroll-counter">
               <span class="scroll-icon">📜</span>
               <span class="scroll-number" id="hk-scroll-count">0</span>
+              <span class="keystone-hud" id="hk-keystone-count" style="margin-left: 10px; opacity: 0.85;">🔑 0/2</span>
             </div>
           </div>
         </div>
 
+        <!-- CAIXA DE DIÁLOGO MINIMALISTA DE NPC -->
+        <div class="dialogue-box-overlay" id="dialogue-box">
+          <div class="dialogue-card">
+            <div class="dialogue-portrait" id="dialogue-portrait">🐱</div>
+            <div class="dialogue-text-area">
+              <h4 id="dialogue-speaker">Mestre Ancião Jin</h4>
+              <p id="dialogue-content">Os espíritos do vale estão inquietos...</p>
+            </div>
+            <span class="dialogue-prompt-hint">Pressione E</span>
+          </div>
+        </div>
+
+        <!-- PROMPT DE INTERAÇÃO FLUTUANTE DISCRETO -->
+        <div class="interact-prompt" id="interact-prompt">
+          <span class="prompt-key">E</span> <span id="interact-text">Conversar</span>
+        </div>
+
         <div class="save-toast" id="save-toast">Salvo</div>
 
-        <!-- Botão discreto para alternar para o Estúdio -->
-        <button id="btn-switch-studio" class="btn-corner-tool" title="Estúdio de Animações">🎬</button>
+        <!-- Botões de Acesso Rápido Discretos -->
+        <div class="corner-tools">
+          <button id="btn-open-amulets" class="btn-corner-tool" title="Amuletos (TAB)">📿</button>
+          <button id="btn-switch-studio" class="btn-corner-tool" title="Estúdio de Animações">🎬</button>
+        </div>
       </div>
     </div>
 

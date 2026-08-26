@@ -1,24 +1,83 @@
 // ==============================================================================
-// GATINHO SAMURAI: ECOS MÍSTICOS - MOTOR METROIDVANIA (3840 x 2145)
-// Interface Minimalista Inspirada em Hollow Knight
+// GATINHO SAMURAI: ECOS MÍSTICOS - MOTOR METROIDVANIA EXPANDIDO
+// Inspirado em Hollow Knight, Ori and the Will of the Wisps e Nine Sols
 // ==============================================================================
 
-// --- 1. SISTEMA DE ÁUDIO SINTETIZADO (WEB AUDIO API) ---
+// --- 1. SISTEMA DE ÁUDIO SINTETIZADO & MÚSICA AMBIENTE DINÂMICA ---
 class SoundSystem {
   constructor() {
     this.ctx = null;
     this.sfxVolume = 0.8;
     this.bgmVolume = 0.7;
     this.enabled = true;
+    this.bgmTimer = null;
+    this.currentSector = 'village';
   }
 
   init() {
     if (!this.ctx) {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       this.ctx = new AudioCtx();
+      this.startAmbientMusic();
     }
     if (this.ctx && this.ctx.state === 'suspended') {
       this.ctx.resume();
+    }
+  }
+
+  // Melodia Zen Procedural por Setor (Shakuhachi / Koto / Caverna Drone)
+  startAmbientMusic() {
+    if (this.bgmTimer) return;
+    const playNote = () => {
+      if (!this.enabled || this.bgmVolume <= 0 || !this.ctx) return;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const filter = this.ctx.createBiquadFilter();
+
+      // Escala Pentatônica Japonesa (Insen / Hirajoshi: D, Eb, G, A, C)
+      const villageScale = [293.66, 311.13, 392.00, 440.00, 523.25, 587.33];
+      const caveScale = [146.83, 155.56, 196.00, 220.00, 261.63];
+
+      const scale = this.currentSector === 'cave' ? caveScale : villageScale;
+      const freq = scale[Math.floor(Math.random() * scale.length)];
+
+      osc.type = this.currentSector === 'cave' ? 'sawtooth' : 'sine';
+      osc.frequency.setValueAtTime(freq, now);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(this.currentSector === 'cave' ? 350 : 1200, now);
+
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.08 * this.bgmVolume, now + 1.2);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 4.5);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 4.6);
+    };
+
+    this.bgmTimer = setInterval(playNote, 2800);
+  }
+
+  playVoiceChatter(pitch = 1.0) {
+    if (!this.enabled || this.sfxVolume <= 0) return;
+    this.init();
+    const now = this.ctx.currentTime;
+    for (let i = 0; i < 4; i++) {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime((300 + Math.random() * 200) * pitch, now + i * 0.06);
+      gain.gain.setValueAtTime(0.12 * this.sfxVolume, now + i * 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.05);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now + i * 0.06);
+      osc.stop(now + i * 0.06 + 0.06);
     }
   }
 
@@ -46,18 +105,6 @@ class SoundSystem {
     filter.connect(gain);
     gain.connect(this.ctx.destination);
     noise.start(now);
-
-    const osc = this.ctx.createOscillator();
-    const oscGain = this.ctx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(1300, now);
-    osc.frequency.exponentialRampToValueAtTime(320, now + 0.16);
-    oscGain.gain.setValueAtTime(0.2 * this.sfxVolume, now);
-    oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
-    osc.connect(oscGain);
-    oscGain.connect(this.ctx.destination);
-    osc.start(now);
-    osc.stop(now + 0.18);
   }
 
   playBash() {
@@ -69,10 +116,8 @@ class SoundSystem {
     osc.type = 'sine';
     osc.frequency.setValueAtTime(300, now);
     osc.frequency.exponentialRampToValueAtTime(1200, now + 0.2);
-
     gain.gain.setValueAtTime(0.35 * this.sfxVolume, now);
     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
-
     osc.connect(gain);
     gain.connect(this.ctx.destination);
     osc.start(now);
@@ -88,10 +133,8 @@ class SoundSystem {
     osc.type = 'triangle';
     osc.frequency.setValueAtTime(180, now);
     osc.frequency.exponentialRampToValueAtTime(540, now + 0.12);
-
     gain.gain.setValueAtTime(0.3 * this.sfxVolume, now);
     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
-
     osc.connect(gain);
     gain.connect(this.ctx.destination);
     osc.start(now);
@@ -107,14 +150,46 @@ class SoundSystem {
     osc.type = 'sine';
     osc.frequency.setValueAtTime(isDouble ? 380 : 220, now);
     osc.frequency.exponentialRampToValueAtTime(isDouble ? 880 : 600, now + 0.12);
-
     gain.gain.setValueAtTime(0.25 * this.sfxVolume, now);
     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
-
     osc.connect(gain);
     gain.connect(this.ctx.destination);
     osc.start(now);
     osc.stop(now + 0.13);
+  }
+
+  playDash() {
+    if (!this.enabled || this.sfxVolume <= 0) return;
+    this.init();
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(600, now);
+    osc.frequency.exponentialRampToValueAtTime(150, now + 0.15);
+    gain.gain.setValueAtTime(0.2 * this.sfxVolume, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.16);
+  }
+
+  playBreak() {
+    if (!this.enabled || this.sfxVolume <= 0) return;
+    this.init();
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(140, now);
+    osc.frequency.exponentialRampToValueAtTime(30, now + 0.2);
+    gain.gain.setValueAtTime(0.35 * this.sfxVolume, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.22);
   }
 
   playGlide() {
@@ -126,10 +201,8 @@ class SoundSystem {
     osc.type = 'triangle';
     osc.frequency.setValueAtTime(380, now);
     osc.frequency.exponentialRampToValueAtTime(240, now + 0.25);
-
     gain.gain.setValueAtTime(0.12 * this.sfxVolume, now);
     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-
     osc.connect(gain);
     gain.connect(this.ctx.destination);
     osc.start(now);
@@ -145,10 +218,8 @@ class SoundSystem {
       const gain = this.ctx.createGain();
       osc.type = 'sine';
       osc.frequency.setValueAtTime(freq, now + idx * 0.08);
-
       gain.gain.setValueAtTime(0.2 * this.sfxVolume, now + idx * 0.08);
       gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.25);
-
       osc.connect(gain);
       gain.connect(this.ctx.destination);
       osc.start(now + idx * 0.08);
@@ -165,10 +236,8 @@ class SoundSystem {
     osc.type = 'sine';
     osc.frequency.setValueAtTime(880, now);
     osc.frequency.exponentialRampToValueAtTime(1760, now + 0.15);
-
     gain.gain.setValueAtTime(0.25 * this.sfxVolume, now);
     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-
     osc.connect(gain);
     gain.connect(this.ctx.destination);
     osc.start(now);
@@ -184,10 +253,8 @@ class SoundSystem {
     osc.type = 'sine';
     osc.frequency.setValueAtTime(110, now);
     osc.frequency.exponentialRampToValueAtTime(40, now + 0.04);
-
     gain.gain.setValueAtTime(0.08 * this.sfxVolume, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
-
     osc.connect(gain);
     gain.connect(this.ctx.destination);
     osc.start(now);
@@ -200,7 +267,7 @@ const sfx = new SoundSystem();
 // --- 2. SISTEMA DE SALVAMENTO LOCALSTORAGE ---
 class SaveManager {
   constructor() {
-    this.storageKey = 'gatinho_samurai_metroidvania_v2';
+    this.storageKey = 'gatinho_samurai_metroidvania_v3';
   }
 
   saveGame(player, checkpointName = 'Santuário Central') {
@@ -211,6 +278,10 @@ class SaveManager {
       maxHealth: player.maxHealth,
       energy: player.energy,
       scrolls: player.scrollsCollected,
+      keystones: player.keystonesCollected,
+      equippedAmulets: player.equippedAmulets,
+      unlockedAmulets: player.unlockedAmulets,
+      questsCompleted: player.questsCompleted,
       checkpoint: checkpointName,
       timestamp: new Date().toLocaleString('pt-BR')
     };
@@ -370,6 +441,7 @@ class StudioAnimator {
     for (let i = 0; i < total; i++) {
       const seg = document.createElement('div');
       seg.className = `scrub-segment ${i === this.currentFrame ? 'active' : ''}`;
+      seg.textContent = i + 1;
       seg.addEventListener('click', () => {
         this.currentFrame = i;
         this.isPlaying = false;
@@ -481,7 +553,7 @@ class MetroidvaniaWorldGame {
     this.worldWidth = 3840;
     this.worldHeight = 2145;
 
-    // Jogador (5 Máscaras de Vida = 100 HP, 20 HP por máscara)
+    // Jogador (5 Máscaras Base = 100 HP, cada máscara = 20 HP)
     this.player = {
       x: 350,
       y: 1580,
@@ -505,18 +577,27 @@ class MetroidvaniaWorldGame {
       isAttacking: false,
       attackTimer: 0,
       isDownslashing: false,
-      health: 100, // 5 Máscaras
-      maxHealth: 100,
-      energy: 100, // Soul Orb
+      health: 100,
+      maxHealth: 100, // Pode aumentar para 120 (+1 Máscara)
+      energy: 100,
       maxEnergy: 100,
       scrollsCollected: [],
-      checkpointName: 'Vila dos Samurais'
+      keystonesCollected: 0,
+      equippedAmulets: ['storm_claw'], // Max 2 slots
+      unlockedAmulets: ['storm_claw', 'lotus_wings', 'spirit_eye'],
+      questsCompleted: [],
+      checkpointName: 'Vila dos Samurais',
+      dashCooldown: 0,
+      isDashing: false,
+      dashTimer: 0
     };
 
     this.cameraX = 0;
     this.cameraY = 0;
     this.keys = {};
     this.isPaused = false;
+    this.currentDialogueNPC = null;
+    this.activeInteractTarget = null;
 
     // Plataformas dos 4 Setores
     this.platforms = [
@@ -543,12 +624,69 @@ class MetroidvaniaWorldGame {
       { x: 2800, y: 1920, w: 350, h: 30, type: 'sub_pipe' }
     ];
 
-    // Paredes de Escalada (Wall Cling / Wall Jump)
+    // 🪷 Plataformas Efêmeras de Lótus (Ori Style - 1.5s timer)
+    this.lotusPlatforms = [
+      { x: 1950, y: 1480, w: 85, h: 20, timer: 0, fading: false, respawnTimer: 0, active: true },
+      { x: 2120, y: 1400, w: 85, h: 20, timer: 0, fading: false, respawnTimer: 0, active: true },
+      { x: 2290, y: 1320, w: 85, h: 20, timer: 0, fading: false, respawnTimer: 0, active: true }
+    ];
+
+    // 🧱 Paredes Destrutíveis
+    this.destructibleWalls = [
+      { id: 'cave_wall_1', x: 2280, y: 1940, w: 35, h: 160, hits: 0, maxHits: 2, destroyed: false }
+    ];
+
+    // ⛩️ Portão Rúnico Ancestral (Keystone Gate)
+    this.keystoneGate = {
+      x: 1780, y: 1540, w: 40, h: 160, required: 2, isOpen: false
+    };
+
+    // 🔑 Chaves de Espírito (Keystones)
+    this.keystones = [
+      { id: 1, x: 670, y: 940, collected: false },
+      { id: 2, x: 2100, y: 1720, collected: false }
+    ];
+
+    // 🐱 NPCs com Diálogos e Quests
+    this.npcs = [
+      {
+        id: 'elder_jin',
+        name: 'Mestre Ancião Jin',
+        portrait: '🐱',
+        x: 420,
+        y: 1570,
+        pitch: 0.8,
+        initialText: 'Os espíritos do vale estão inquietos. Traga-me as 2 Chaves de Espírito escondidas nos telhados e no rio para abrir o grande portão.',
+        completedText: 'Você provou sua disciplina! Tome este Fragmento de Máscara Sagrada. Sua vida máxima foi expandida!'
+      },
+      {
+        id: 'blacksmith_kumi',
+        name: 'Ferreira Kumi',
+        portrait: '😼',
+        x: 920,
+        y: 1570,
+        pitch: 1.2,
+        initialText: 'Espadas afiadas cortam bambu, mas amuletos dobram as leis espirituais. Pressione TAB para forjar e equipar seus talismãs!',
+        completedText: 'Sinta a ressonância do chakra em seu quimono... Use seus amuletos com sabedoria.'
+      },
+      {
+        id: 'explorer_ren',
+        name: 'Explorador Ren',
+        portrait: '😾',
+        x: 2380,
+        y: 1980,
+        pitch: 1.0,
+        initialText: 'Pelas nove vidas! Você quebrou a parede! Tome este Amuleto do Passo Fantasma como agradecimento!',
+        completedText: 'Com o Passo Fantasma, use Shift para atravessar perigos como uma sombra.'
+      }
+    ];
+
+    // Paredes de Escalada
     this.wallCliffs = [
       { x: 2950, y: 200, w: 60, h: 1450, side: -1 }
     ];
 
-    // Espíritos Luminosos / Wisps (Mecânica de Bash)
+    // Espíritos Luminosos (Wisps)
     this.spiritWisps = [
       { x: 2540, y: 780, color: '#fbbf24', auraRadius: 28, type: 'gold' },
       { x: 2710, y: 560, color: '#38bdf8', auraRadius: 28, type: 'blue' },
@@ -562,23 +700,23 @@ class MetroidvaniaWorldGame {
       { x: 2200, y: 1830, w: 55, h: 25, color: '#a855f7', bounceForce: -20.0 }
     ];
 
-    // Corrente de Vento no Abismo
+    // Corrente de Vento
     this.windChasm = { x: 2000, y: 600, w: 350, h: 1200, lift: -11.5 };
 
-    // Santuários de Meditação / Checkpoint
+    // Santuários
     this.meditationShrines = [
       { x: 300, y: 1620, name: 'Santuário das Cerejeiras', lit: true },
       { x: 3200, y: 990, name: 'Santuário dos Espíritos', lit: true }
     ];
 
-    // Pergaminhos Sagrados
+    // Pergaminhos
     this.scrolls = [
       { id: 1, x: 690, y: 920, collected: false, name: 'Pergaminho 1' },
       { id: 2, x: 2810, y: 380, collected: false, name: 'Pergaminho 2' },
       { id: 3, x: 2400, y: 2040, collected: false, name: 'Pergaminho 3' }
     ];
 
-    // Efeitos Visuais
+    // Efeitos
     this.particles = [];
     this.sakuraPetals = [];
     this.slashes = [];
@@ -622,6 +760,13 @@ class MetroidvaniaWorldGame {
       if (e.code === 'KeyE') {
         this.tryInteract();
       }
+      if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+        this.tryDash();
+      }
+      if (e.code === 'Tab') {
+        e.preventDefault();
+        this.toggleAmuletsModal();
+      }
       if (e.code === 'Escape') {
         this.togglePause();
       }
@@ -653,10 +798,94 @@ class MetroidvaniaWorldGame {
     }
   }
 
+  toggleAmuletsModal() {
+    const modal = document.getElementById('amulets-modal');
+    if (modal) {
+      modal.classList.toggle('active');
+      this.updateAmuletsUI();
+    }
+  }
+
+  updateAmuletsUI() {
+    const p = this.player;
+    // Slots ativos
+    const slot0 = document.getElementById('notch-0');
+    const slot1 = document.getElementById('notch-1');
+    const iconMap = { storm_claw: '🗡️', lotus_wings: '🌸', spirit_eye: '👁️', shadow_dash: '💨' };
+
+    if (slot0) {
+      slot0.className = `notch-slot ${p.equippedAmulets[0] ? 'equipped' : 'empty'}`;
+      slot0.textContent = p.equippedAmulets[0] ? iconMap[p.equippedAmulets[0]] : '';
+    }
+    if (slot1) {
+      slot1.className = `notch-slot ${p.equippedAmulets[1] ? 'equipped' : 'empty'}`;
+      slot1.textContent = p.equippedAmulets[1] ? iconMap[p.equippedAmulets[1]] : '';
+    }
+
+    document.querySelectorAll('.amulet-item').forEach(item => {
+      const id = item.dataset.amulet;
+      const isEquipped = p.equippedAmulets.includes(id);
+      const isUnlocked = p.unlockedAmulets.includes(id);
+
+      item.classList.toggle('equipped', isEquipped);
+      const btn = item.querySelector('.btn-amulet-toggle');
+      if (btn) {
+        btn.disabled = !isUnlocked;
+        btn.textContent = isEquipped ? 'Desequipar' : (isUnlocked ? 'Equipar' : 'Bloqueado');
+        btn.classList.toggle('active', isEquipped);
+      }
+    });
+  }
+
+  toggleAmulet(amuletId) {
+    const p = this.player;
+    if (!p.unlockedAmulets.includes(amuletId)) return;
+
+    if (p.equippedAmulets.includes(amuletId)) {
+      p.equippedAmulets = p.equippedAmulets.filter(id => id !== amuletId);
+    } else {
+      if (p.equippedAmulets.length >= 2) {
+        p.equippedAmulets.shift(); // Remove o mais antigo se já tiver 2
+      }
+      p.equippedAmulets.push(amuletId);
+    }
+    this.updateAmuletsUI();
+    sfx.playCollect();
+  }
+
+  tryDash() {
+    const p = this.player;
+    if (!p.equippedAmulets.includes('shadow_dash')) return;
+    if (p.dashCooldown > 0) return;
+
+    p.isDashing = true;
+    p.dashTimer = 14;
+    p.dashCooldown = 40;
+    p.vx = p.facing * 24.0;
+    p.vy = 0;
+    sfx.playDash();
+
+    for (let i = 0; i < 12; i++) {
+      this.particles.push({
+        x: p.x + 35,
+        y: p.y + 60,
+        vx: -p.facing * (Math.random() * 4 + 2),
+        vy: (Math.random() - 0.5) * 4,
+        life: 18,
+        maxLife: 18,
+        color: '#38bdf8',
+        size: 5
+      });
+    }
+  }
+
   handleJumpPress() {
     const p = this.player;
+    const hasLotus = p.equippedAmulets.includes('lotus_wings');
+    const jumpBoost = hasLotus ? 1.08 : 1.0;
+
     if (p.isGrounded) {
-      p.vy = p.jumpForce;
+      p.vy = p.jumpForce * jumpBoost;
       p.isGrounded = false;
       p.canDoubleJump = true;
       this.spawnDust(p.x + 35, p.y + 110, 10);
@@ -670,7 +899,7 @@ class MetroidvaniaWorldGame {
       this.spawnDust(p.x + 35, p.y + 70, 12, '#38bdf8');
       sfx.playJump(true);
     } else if (p.canDoubleJump) {
-      p.vy = p.doubleJumpForce;
+      p.vy = p.doubleJumpForce * jumpBoost;
       p.canDoubleJump = false;
       this.spawnDust(p.x + 35, p.y + 80, 14, '#fbbf24');
       sfx.playJump(true);
@@ -726,6 +955,9 @@ class MetroidvaniaWorldGame {
       const isDown = this.keys['KeyS'] || this.keys['ArrowDown'];
       p.isDownslashing = !p.isGrounded && isDown;
 
+      const hasStormClaw = p.equippedAmulets.includes('storm_claw');
+      const reachMultiplier = hasStormClaw ? 1.4 : 1.0;
+
       sfx.playSlash();
 
       this.slashes.push({
@@ -733,10 +965,45 @@ class MetroidvaniaWorldGame {
         y: p.isDownslashing ? p.y + 90 : p.y + 40,
         facing: p.facing,
         isDown: p.isDownslashing,
+        reach: reachMultiplier,
         life: 14,
         maxLife: 14
       });
 
+      // Checar acerto em Paredes Destrutíveis
+      for (const wall of this.destructibleWalls) {
+        if (!wall.destroyed) {
+          const slashBox = {
+            x: p.facing === 1 ? p.x + 30 : p.x - 60 * reachMultiplier,
+            y: p.y,
+            w: 80 * reachMultiplier,
+            h: 120
+          };
+          if (slashBox.x < wall.x + wall.w && slashBox.x + slashBox.w > wall.x &&
+              slashBox.y < wall.y + wall.h && slashBox.y + slashBox.h > wall.y) {
+            wall.hits++;
+            sfx.playBreak();
+            for (let i = 0; i < 15; i++) {
+              this.particles.push({
+                x: wall.x + wall.w / 2,
+                y: wall.y + Math.random() * wall.h,
+                vx: (Math.random() - 0.5) * 8,
+                vy: (Math.random() - 0.5) * 8,
+                life: 25,
+                maxLife: 25,
+                color: '#64748b',
+                size: 5
+              });
+            }
+            if (wall.hits >= wall.maxHits) {
+              wall.destroyed = true;
+              this.showToast('PAREDE DESTRUÍDA!');
+            }
+          }
+        }
+      }
+
+      // Checar Pogo
       if (p.isDownslashing) {
         for (const mush of this.pogoMushrooms) {
           if (p.x + 35 >= mush.x && p.x + 35 <= mush.x + mush.w &&
@@ -766,14 +1033,81 @@ class MetroidvaniaWorldGame {
 
   tryInteract() {
     const p = this.player;
+
+    // Se já estiver conversando, fecha o diálogo
+    const dialogueBox = document.getElementById('dialogue-box');
+    if (dialogueBox && dialogueBox.classList.contains('active')) {
+      dialogueBox.classList.remove('active');
+      return;
+    }
+
+    // 1. Interagir com NPCs
+    for (const npc of this.npcs) {
+      if (Math.hypot(p.x - npc.x, p.y - npc.y) < 100) {
+        this.openNPCDialogue(npc);
+        return;
+      }
+    }
+
+    // 2. Interagir com Santuários
     for (const shrine of this.meditationShrines) {
       if (Math.hypot(p.x - shrine.x, p.y - shrine.y) < 120) {
         p.health = p.maxHealth;
         p.energy = p.maxEnergy;
         this.saveProgress(shrine.name);
         sfx.playSave();
+        this.updateHollowKnightHUD();
         break;
       }
+    }
+
+    // 3. Interagir com Portão Rúnico
+    const gate = this.keystoneGate;
+    if (!gate.isOpen && Math.hypot(p.x - gate.x, p.y - (gate.y + 80)) < 120) {
+      if (p.keystonesCollected >= gate.required) {
+        gate.isOpen = true;
+        sfx.playBreak();
+        this.showToast('PORTÃO RÚNICO ABERTO!');
+      } else {
+        this.showToast(`REQUER ${gate.required} CHAVES (VOCÊ TEM ${p.keystonesCollected})`);
+      }
+    }
+  }
+
+  openNPCDialogue(npc) {
+    const p = this.player;
+    sfx.playVoiceChatter(npc.pitch);
+
+    const isCompleted = p.questsCompleted.includes(npc.id);
+    let text = isCompleted ? npc.completedText : npc.initialText;
+
+    // Lógica especial de quests
+    if (npc.id === 'elder_jin' && !isCompleted && p.keystonesCollected >= 2) {
+      p.questsCompleted.push(npc.id);
+      p.maxHealth = 120; // +1 Máscara de vida permanente!
+      p.health = p.maxHealth;
+      text = npc.completedText;
+      this.updateHollowKnightHUD();
+      sfx.playSave();
+    } else if (npc.id === 'explorer_ren' && !isCompleted) {
+      p.questsCompleted.push(npc.id);
+      if (!p.unlockedAmulets.includes('shadow_dash')) {
+        p.unlockedAmulets.push('shadow_dash');
+      }
+    } else if (npc.id === 'blacksmith_kumi') {
+      this.toggleAmuletsModal();
+    }
+
+    const box = document.getElementById('dialogue-box');
+    const speaker = document.getElementById('dialogue-speaker');
+    const content = document.getElementById('dialogue-content');
+    const portrait = document.getElementById('dialogue-portrait');
+
+    if (box && speaker && content) {
+      speaker.textContent = npc.name;
+      content.textContent = text;
+      if (portrait) portrait.textContent = npc.portrait;
+      box.classList.add('active');
     }
   }
 
@@ -788,8 +1122,13 @@ class MetroidvaniaWorldGame {
     this.player.x = saveData.x;
     this.player.y = saveData.y;
     this.player.health = saveData.health || 100;
+    this.player.maxHealth = saveData.maxHealth || 100;
     this.player.energy = saveData.energy || 100;
     this.player.scrollsCollected = saveData.scrolls || [];
+    this.player.keystonesCollected = saveData.keystones || 0;
+    this.player.equippedAmulets = saveData.equippedAmulets || ['storm_claw'];
+    this.player.unlockedAmulets = saveData.unlockedAmulets || ['storm_claw', 'lotus_wings', 'spirit_eye'];
+    this.player.questsCompleted = saveData.questsCompleted || [];
     this.player.checkpointName = saveData.checkpoint || 'Vila dos Samurais';
 
     this.scrolls.forEach(sc => {
@@ -826,8 +1165,7 @@ class MetroidvaniaWorldGame {
 
   updateHollowKnightHUD() {
     const p = this.player;
-    // 1. Atualizar Máscaras de Vida (5 Máscaras)
-    const maskCount = 5;
+    const maskCount = Math.floor(p.maxHealth / 20); // 5 ou 6 máscaras
     const currentMasks = Math.ceil((p.health / p.maxHealth) * maskCount);
     const container = document.getElementById('masks-container');
     if (container) {
@@ -839,17 +1177,14 @@ class MetroidvaniaWorldGame {
       }
     }
 
-    // 2. Atualizar Orbe de Alma / Energia
     const liquid = document.getElementById('soul-liquid');
-    if (liquid) {
-      liquid.style.height = `${(p.energy / p.maxEnergy) * 100}%`;
-    }
+    if (liquid) liquid.style.height = `${(p.energy / p.maxEnergy) * 100}%`;
 
-    // 3. Atualizar Contador de Pergaminhos
     const countEl = document.getElementById('hk-scroll-count');
-    if (countEl) {
-      countEl.textContent = p.scrollsCollected.length;
-    }
+    if (countEl) countEl.textContent = p.scrollsCollected.length;
+
+    const keyEl = document.getElementById('hk-keystone-count');
+    if (keyEl) keyEl.textContent = `🔑 ${p.keystonesCollected}/2`;
   }
 
   update() {
@@ -859,6 +1194,44 @@ class MetroidvaniaWorldGame {
     const left = this.keys['KeyA'] || this.keys['ArrowLeft'];
     const right = this.keys['KeyD'] || this.keys['ArrowRight'];
     const isSprint = this.keys['ShiftLeft'] || this.keys['ShiftRight'];
+
+    if (p.dashCooldown > 0) p.dashCooldown--;
+    if (p.isDashing) {
+      p.dashTimer--;
+      if (p.dashTimer <= 0) p.isDashing = false;
+    }
+
+    // Setor para Trilha Sonora Adaptativa
+    sfx.currentSector = p.y > 1750 ? 'cave' : 'village';
+
+    // Atração Magnética de Almas (Amuleto Olho dos Ancestrais)
+    const hasSpiritEye = p.equippedAmulets.includes('spirit_eye');
+    if (hasSpiritEye) {
+      for (const sc of this.scrolls) {
+        if (!sc.collected && Math.hypot(p.x + 35 - sc.x, p.y + 55 - sc.y) < 220) {
+          sc.x += (p.x + 35 - sc.x) * 0.08;
+          sc.y += (p.y + 55 - sc.y) * 0.08;
+        }
+      }
+    }
+
+    // Plataformas Efêmeras de Lótus
+    for (const lotus of this.lotusPlatforms) {
+      if (lotus.fading) {
+        lotus.timer++;
+        if (lotus.timer > 90) { // 1.5s
+          lotus.active = false;
+          lotus.fading = false;
+          lotus.respawnTimer = 180; // 3s
+        }
+      } else if (!lotus.active) {
+        lotus.respawnTimer--;
+        if (lotus.respawnTimer <= 0) {
+          lotus.active = true;
+          lotus.timer = 0;
+        }
+      }
+    }
 
     // Corrente de Vento
     const wind = this.windChasm;
@@ -870,49 +1243,56 @@ class MetroidvaniaWorldGame {
     }
 
     // Movimentação
-    const spd = isSprint ? p.sprintSpeed : p.speed;
-    if (left) {
-      p.facing = -1;
-      p.vx = -spd;
-      if (p.isGrounded && Math.random() < 0.25) this.spawnDust(p.x + 45, p.y + 110, 1);
-    } else if (right) {
-      p.facing = 1;
-      p.vx = spd;
-      if (p.isGrounded && Math.random() < 0.25) this.spawnDust(p.x + 20, p.y + 110, 1);
-    } else {
-      p.vx *= 0.8;
-      if (Math.abs(p.vx) < 0.1) p.vx = 0;
-    }
+    if (!p.isDashing) {
+      const spd = isSprint ? p.sprintSpeed : p.speed;
+      if (left) {
+        p.facing = -1;
+        p.vx = -spd;
+        if (p.isGrounded && Math.random() < 0.25) this.spawnDust(p.x + 45, p.y + 110, 1);
+      } else if (right) {
+        p.facing = 1;
+        p.vx = spd;
+        if (p.isGrounded && Math.random() < 0.25) this.spawnDust(p.x + 20, p.y + 110, 1);
+      } else {
+        p.vx *= 0.8;
+        if (Math.abs(p.vx) < 0.1) p.vx = 0;
+      }
 
-    // Wall Cling
-    p.isWallSliding = false;
-    if (!p.isGrounded && p.vy > 0) {
-      for (const wall of this.wallCliffs) {
-        if (p.x + 70 >= wall.x && p.x <= wall.x + wall.w && p.y >= wall.y && p.y <= wall.y + wall.h) {
-          if ((left && wall.side === 1) || (right && wall.side === -1)) {
-            p.isWallSliding = true;
-            p.wallDir = wall.side;
-            p.vy = Math.min(p.vy, 3.0);
+      // Wall Cling
+      p.isWallSliding = false;
+      if (!p.isGrounded && p.vy > 0) {
+        for (const wall of this.wallCliffs) {
+          if (p.x + 70 >= wall.x && p.x <= wall.x + wall.w && p.y >= wall.y && p.y <= wall.y + wall.h) {
+            if ((left && wall.side === 1) || (right && wall.side === -1)) {
+              p.isWallSliding = true;
+              p.wallDir = wall.side;
+              p.vy = Math.min(p.vy, 3.0);
+            }
           }
         }
       }
-    }
 
-    // Gravidade
-    if (p.isGliding && p.vy > 0) {
-      p.vy = Math.min(p.vy + p.glideGravity, 2.5);
-    } else if (!p.isWallSliding) {
-      p.vy += p.gravity;
-      if (p.vy > 18) p.vy = 18;
-    }
+      // Gravidade & Planador
+      const hasLotus = p.equippedAmulets.includes('lotus_wings');
+      const glideFall = hasLotus ? 0.08 : p.glideGravity;
 
-    p.x += p.vx;
-    p.y += p.vy;
+      if (p.isGliding && p.vy > 0) {
+        p.vy = Math.min(p.vy + glideFall, hasLotus ? 1.4 : 2.5);
+      } else if (!p.isWallSliding) {
+        p.vy += p.gravity;
+        if (p.vy > 18) p.vy = 18;
+      }
+
+      p.x += p.vx;
+      p.y += p.vy;
+    } else {
+      p.x += p.vx;
+    }
 
     p.x = Math.max(20, Math.min(this.worldWidth - 90, p.x));
     p.y = Math.max(50, Math.min(this.worldHeight - 130, p.y));
 
-    // Colisão
+    // Colisão com Plataformas
     const prevGrounded = p.isGrounded;
     p.isGrounded = false;
     const footX = p.x + 35;
@@ -941,17 +1321,79 @@ class MetroidvaniaWorldGame {
       }
     }
 
-    // Coleta de Pergaminhos
-    for (const sc of this.scrolls) {
-      if (!sc.collected) {
-        if (Math.hypot(p.x + 35 - sc.x, p.y + 55 - sc.y) < 55) {
-          sc.collected = true;
-          p.scrollsCollected.push(sc.id);
-          sfx.playCollect();
-          this.updateHollowKnightHUD();
+    // Colisão com Plataformas de Lótus
+    for (const lotus of this.lotusPlatforms) {
+      if (lotus.active && footX >= lotus.x && footX <= lotus.x + lotus.w) {
+        if (p.vy >= 0 && footY >= lotus.y && footY - p.vy <= lotus.y + 20) {
+          p.y = lotus.y - 110;
+          p.vy = 0;
+          p.isGrounded = true;
+          p.canDoubleJump = true;
+          p.isGliding = false;
+          lotus.fading = true;
+          break;
         }
       }
     }
+
+    // Colisão com Portão Rúnico (bloqueio horizontal)
+    const gate = this.keystoneGate;
+    if (!gate.isOpen && p.x + 70 >= gate.x && p.x <= gate.x + gate.w && p.y + 110 >= gate.y && p.y <= gate.y + gate.h) {
+      p.x = gate.x - 70;
+      p.vx = 0;
+    }
+
+    // Colisão com Paredes Destrutíveis
+    for (const wall of this.destructibleWalls) {
+      if (!wall.destroyed && p.x + 70 >= wall.x && p.x <= wall.x + wall.w && p.y + 110 >= wall.y && p.y <= wall.y + wall.h) {
+        p.x = wall.x - 70;
+        p.vx = 0;
+      }
+    }
+
+    // Coleta de Chaves de Espírito
+    for (const key of this.keystones) {
+      if (!key.collected && Math.hypot(p.x + 35 - key.x, p.y + 55 - key.y) < 55) {
+        key.collected = true;
+        p.keystonesCollected++;
+        sfx.playCollect();
+        this.showToast(`CHAVE DE ESPÍRITO ENCONTRADA (${p.keystonesCollected}/2)`);
+        this.updateHollowKnightHUD();
+      }
+    }
+
+    // Coleta de Pergaminhos
+    for (const sc of this.scrolls) {
+      if (!sc.collected && Math.hypot(p.x + 35 - sc.x, p.y + 55 - sc.y) < 55) {
+        sc.collected = true;
+        p.scrollsCollected.push(sc.id);
+        sfx.playCollect();
+        this.updateHollowKnightHUD();
+      }
+    }
+
+    // Prompt de Interação Próxima
+    let nearTarget = false;
+    const promptEl = document.getElementById('interact-prompt');
+    const promptText = document.getElementById('interact-text');
+
+    for (const npc of this.npcs) {
+      if (Math.hypot(p.x - npc.x, p.y - npc.y) < 100) {
+        nearTarget = true;
+        if (promptText) promptText.textContent = `Conversar com ${npc.name.split(' ')[0]}`;
+        break;
+      }
+    }
+    if (!nearTarget) {
+      for (const shrine of this.meditationShrines) {
+        if (Math.hypot(p.x - shrine.x, p.y - shrine.y) < 120) {
+          nearTarget = true;
+          if (promptText) promptText.textContent = 'Meditar & Salvar';
+          break;
+        }
+      }
+    }
+    if (promptEl) promptEl.classList.toggle('show', nearTarget);
 
     // Animações
     if (p.isAttacking) {
@@ -1028,23 +1470,100 @@ class MetroidvaniaWorldGame {
       ctx.drawImage(envImages['metroidvania_world_art'], 0, 0, this.worldWidth, this.worldHeight);
     }
 
-    const wind = this.windChasm;
-    ctx.fillStyle = 'rgba(56, 189, 248, 0.07)';
-    ctx.fillRect(wind.x, wind.y, wind.w, wind.h);
+    // 1. Portão Rúnico (se fechado)
+    const gate = this.keystoneGate;
+    if (!gate.isOpen) {
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(gate.x, gate.y, gate.w, gate.h);
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(gate.x, gate.y, gate.w, gate.h);
+      // Runas brilhantes
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = '16px serif';
+      ctx.fillText('⛩️', gate.x + 8, gate.y + 50);
+      ctx.fillText('🔒', gate.x + 8, gate.y + 100);
+    }
 
+    // 2. Paredes Destrutíveis
+    for (const wall of this.destructibleWalls) {
+      if (!wall.destroyed) {
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(wall.x, wall.y, wall.w, wall.h);
+        // Rachaduras
+        ctx.strokeStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.moveTo(wall.x + 10, wall.y + 20); ctx.lineTo(wall.x + 25, wall.y + 60); ctx.lineTo(wall.x + 8, wall.y + 120);
+        ctx.stroke();
+      }
+    }
+
+    // 3. Plataformas de Lótus Efêmeras
+    for (const lotus of this.lotusPlatforms) {
+      if (lotus.active) {
+        ctx.save();
+        if (lotus.fading) {
+          ctx.globalAlpha = 1.0 - (lotus.timer / 90.0) * 0.7;
+          ctx.translate((Math.random() - 0.5) * 3, 0); // Tremor
+        }
+        ctx.fillStyle = '#14b8a6';
+        ctx.beginPath();
+        ctx.ellipse(lotus.x + lotus.w / 2, lotus.y + 10, lotus.w / 2, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#5eead4';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    // 4. Chaves de Espírito (Keystones)
+    for (const key of this.keystones) {
+      if (!key.collected) {
+        const hoverY = key.y + Math.sin(Date.now() * 0.006) * 5;
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = '22px sans-serif';
+        ctx.fillText('🔑', key.x - 11, hoverY + 8);
+      }
+    }
+
+    // 5. NPCs no Mundo
+    for (const npc of this.npcs) {
+      ctx.save();
+      ctx.translate(npc.x, npc.y + 30);
+      // Sombra
+      ctx.fillStyle = 'rgba(0,0,0,0.4)';
+      ctx.beginPath(); ctx.ellipse(0, 0, 20, 6, 0, 0, Math.PI * 2); ctx.fill();
+      // Ícone / Retrato estilizado
+      ctx.font = '32px sans-serif';
+      ctx.fillText(npc.portrait, -16, -10);
+      ctx.restore();
+    }
+
+    // 6. Espíritos Luminosos (Wisps)
     const wispTime = Date.now() * 0.003;
     for (const wisp of this.spiritWisps) {
       const curX = wisp.x + Math.sin(wispTime) * 12;
       const curY = wisp.y + Math.sin(wispTime * 2) * 8;
-
       ctx.fillStyle = wisp.color;
       ctx.beginPath(); ctx.arc(curX, curY, 8, 0, Math.PI * 2); ctx.fill();
-
       ctx.strokeStyle = wisp.color;
       ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(curX, curY, wisp.auraRadius + Math.sin(wispTime * 3) * 4, 0, Math.PI * 2); ctx.stroke();
     }
 
+    // 7. Cogumelos Bioluminescentes (Pogo)
+    for (const mush of this.pogoMushrooms) {
+      ctx.fillStyle = mush.color;
+      ctx.beginPath();
+      ctx.ellipse(mush.x + mush.w / 2, mush.y + 10, mush.w / 2, mush.h / 2, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // 8. Pergaminhos
     for (const sc of this.scrolls) {
       if (!sc.collected) {
         const hoverY = sc.y + Math.sin(Date.now() * 0.005) * 6;
@@ -1055,6 +1574,7 @@ class MetroidvaniaWorldGame {
       }
     }
 
+    // 9. Pétalas
     for (const petal of this.sakuraPetals) {
       ctx.save();
       ctx.translate(petal.x, petal.y);
@@ -1066,11 +1586,13 @@ class MetroidvaniaWorldGame {
       ctx.restore();
     }
 
+    // 10. Partículas
     for (const pt of this.particles) {
       ctx.fillStyle = pt.color;
       ctx.beginPath(); ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2); ctx.fill();
     }
 
+    // 11. Desenhar Personagem
     const p = this.player;
     let animKey = p.state;
     if (animKey === 'glide') animKey = 'jump';
@@ -1104,17 +1626,19 @@ class MetroidvaniaWorldGame {
       ctx.restore();
     }
 
+    // 12. Rastro de Corte da Katana
     for (const sl of this.slashes) {
       ctx.save();
       ctx.translate(sl.x, sl.y);
       ctx.scale(sl.facing, 1);
+      const reach = sl.reach || 1.0;
       ctx.strokeStyle = `rgba(239, 68, 68, ${sl.life / sl.maxLife})`;
-      ctx.lineWidth = 7;
+      ctx.lineWidth = 7 * reach;
       ctx.beginPath();
       if (sl.isDown) {
-        ctx.arc(0, 0, 45, 0.2 * Math.PI, 0.8 * Math.PI);
+        ctx.arc(0, 0, 45 * reach, 0.2 * Math.PI, 0.8 * Math.PI);
       } else {
-        ctx.arc(0, 0, 45, -0.6 * Math.PI, 0.4 * Math.PI);
+        ctx.arc(0, 0, 45 * reach, -0.6 * Math.PI, 0.4 * Math.PI);
       }
       ctx.stroke();
       ctx.restore();
@@ -1124,11 +1648,12 @@ class MetroidvaniaWorldGame {
   }
 }
 
-// --- 6. MENU PRINCIPAL & INICIALIZAÇÃO ---
+// --- 6. CONTROLE DO MENU PRINCIPAL & INICIALIZAÇÃO ---
 function setupMainMenu(game) {
   const menuOverlay = document.getElementById('main-menu-overlay');
   const optionsModal = document.getElementById('options-modal');
   const pauseModal = document.getElementById('pause-menu-overlay');
+  const amuletsModal = document.getElementById('amulets-modal');
 
   saveManager.updateMenuTag();
 
@@ -1154,7 +1679,7 @@ function setupMainMenu(game) {
         menuOverlay.classList.add('hidden');
         sfx.init();
       } else {
-        alert('Nenhum jogo salvo encontrado. Inicie um novo jogo!');
+        alert('Nenhum jogo salvo encontrado.');
       }
     });
   }
@@ -1191,6 +1716,28 @@ function setupMainMenu(game) {
     });
   }
 
+  const openAmuletsBtn = document.getElementById('btn-open-amulets');
+  if (openAmuletsBtn) {
+    openAmuletsBtn.addEventListener('click', () => {
+      game.toggleAmuletsModal();
+    });
+  }
+
+  const closeAmuletsBtn = document.getElementById('btn-close-amulets');
+  if (closeAmuletsBtn) {
+    closeAmuletsBtn.addEventListener('click', () => {
+      if (amuletsModal) amuletsModal.classList.remove('active');
+    });
+  }
+
+  // Botoes de Equipar Amuletos
+  document.querySelectorAll('.btn-amulet-toggle').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = e.currentTarget.dataset.amulet;
+      game.toggleAmulet(id);
+    });
+  });
+
   const closeOptBtn = document.getElementById('btn-close-options');
   if (closeOptBtn) {
     closeOptBtn.addEventListener('click', () => {
@@ -1209,6 +1756,14 @@ function setupMainMenu(game) {
     sfxSlider.addEventListener('input', (e) => {
       sfx.sfxVolume = e.target.value / 100.0;
       document.getElementById('sfx-vol-val').textContent = `${e.target.value}%`;
+    });
+  }
+
+  const bgmSlider = document.getElementById('opt-bgm-vol');
+  if (bgmSlider) {
+    bgmSlider.addEventListener('input', (e) => {
+      sfx.bgmVolume = e.target.value / 100.0;
+      document.getElementById('bgm-vol-val').textContent = `${e.target.value}%`;
     });
   }
 

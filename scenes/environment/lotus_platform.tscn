@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://clotusplat701"]
+
+[ext_resource type="Script" path="res://scenes/environment/lotus_platform.gd" id="1_script"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lotus"]
+size = Vector2(80, 20)
+
+[node name="LotusPlatform" type="StaticBody2D" groups=["LotusPlatform"]]
+collision_layer = 1
+collision_mask = 2
+script = ExtResource("1_script")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_lotus")
+one_way_collision = true
