@@ -1,6 +1,6 @@
 // ==============================================================================
 // GATINHO SAMURAI: ECOS MÍSTICOS - MOTOR METROIDVANIA (3840 x 2145)
-// Inspirado em Hollow Knight, Ori and the Will of the Wisps e Nine Sols
+// Interface Minimalista Inspirada em Hollow Knight
 // ==============================================================================
 
 // --- 1. SISTEMA DE ÁUDIO SINTETIZADO (WEB AUDIO API) ---
@@ -244,7 +244,7 @@ class SaveManager {
     const save = this.loadGame();
     if (tag) {
       if (save) {
-        tag.textContent = `Salvo: ${save.checkpoint} (${save.scrolls.length}/3 📜)`;
+        tag.textContent = `${save.checkpoint} (${save.scrolls.length}/3 📜)`;
         tag.style.color = '#38bdf8';
       } else {
         tag.textContent = 'Nenhum save';
@@ -300,10 +300,6 @@ class StudioAnimator {
     this.fps = 4;
     this.zoom = 2.0;
     this.lastFrameTime = 0;
-    this.showGhost = false;
-    this.showGrid = false;
-    this.showPivot = true;
-    this.bgStyle = 'dark';
     this.setupListeners();
   }
 
@@ -321,7 +317,7 @@ class StudioAnimator {
     if (playBtn) {
       playBtn.addEventListener('click', () => {
         this.isPlaying = !this.isPlaying;
-        playBtn.textContent = this.isPlaying ? '⏸️ Pausar' : '▶️ Reproduzir';
+        playBtn.textContent = this.isPlaying ? '⏸️' : '▶️';
       });
     }
 
@@ -329,7 +325,7 @@ class StudioAnimator {
     if (prevBtn) {
       prevBtn.addEventListener('click', () => {
         this.isPlaying = false;
-        if (playBtn) playBtn.textContent = '▶️ Reproduzir';
+        if (playBtn) playBtn.textContent = '▶️';
         this.stepFrame(-1);
       });
     }
@@ -338,7 +334,7 @@ class StudioAnimator {
     if (nextBtn) {
       nextBtn.addEventListener('click', () => {
         this.isPlaying = false;
-        if (playBtn) playBtn.textContent = '▶️ Reproduzir';
+        if (playBtn) playBtn.textContent = '▶️';
         this.stepFrame(1);
       });
     }
@@ -350,37 +346,6 @@ class StudioAnimator {
         this.updateUI();
       });
     }
-
-    const speedSlider = document.getElementById('speed-slider');
-    if (speedSlider) {
-      speedSlider.addEventListener('input', (e) => {
-        this.fps = parseInt(e.target.value);
-        document.getElementById('speed-val').textContent = this.fps;
-        document.getElementById('fps-display').textContent = `${this.fps} FPS`;
-      });
-    }
-
-    const zoomSlider = document.getElementById('zoom-slider');
-    if (zoomSlider) {
-      zoomSlider.addEventListener('input', (e) => {
-        this.zoom = parseFloat(e.target.value);
-        document.getElementById('zoom-val').textContent = this.zoom.toFixed(1);
-        document.getElementById('zoom-display').textContent = `${this.zoom.toFixed(1)}x`;
-      });
-    }
-
-    const onionToggle = document.getElementById('toggle-onion');
-    if (onionToggle) {
-      onionToggle.addEventListener('change', (e) => { this.showGhost = e.target.checked; });
-    }
-    const gridToggle = document.getElementById('toggle-grid');
-    if (gridToggle) {
-      gridToggle.addEventListener('change', (e) => { this.showGrid = e.target.checked; });
-    }
-    const pivotToggle = document.getElementById('toggle-pivot');
-    if (pivotToggle) {
-      pivotToggle.addEventListener('change', (e) => { this.showPivot = e.target.checked; });
-    }
   }
 
   selectAnimation(animKey) {
@@ -388,23 +353,9 @@ class StudioAnimator {
     this.currentFrame = 0;
     const fpsMap = { idle: 4, walk: 8, run: 11, jump: 6, attack: 10, turn: 4 };
     this.fps = fpsMap[animKey] || 8;
-    const speedSlider = document.getElementById('speed-slider');
-    if (speedSlider) {
-      speedSlider.value = this.fps;
-      document.getElementById('speed-val').textContent = this.fps;
-      document.getElementById('fps-display').textContent = `${this.fps} FPS`;
-    }
 
-    const titles = {
-      idle: 'IDLE (Postura de Guarda)',
-      walk: 'WALK (Caminhada Fluida)',
-      run: 'RUN (Corrida / Dash)',
-      jump: 'JUMP (Pulo & Queda)',
-      attack: 'ATTACK (Katana Flamejante)',
-      turn: 'VURN / TURN (Rotação e Posturas)'
-    };
     const titleEl = document.getElementById('current-anim-name');
-    if (titleEl) titleEl.textContent = titles[animKey] || animKey.toUpperCase();
+    if (titleEl) titleEl.textContent = animKey.toUpperCase();
 
     this.buildScrubber();
     this.buildThumbnails();
@@ -419,12 +370,11 @@ class StudioAnimator {
     for (let i = 0; i < total; i++) {
       const seg = document.createElement('div');
       seg.className = `scrub-segment ${i === this.currentFrame ? 'active' : ''}`;
-      seg.textContent = i + 1;
       seg.addEventListener('click', () => {
         this.currentFrame = i;
         this.isPlaying = false;
         const playBtn = document.getElementById('btn-play-pause');
-        if (playBtn) playBtn.textContent = '▶️ Reproduzir';
+        if (playBtn) playBtn.textContent = '▶️';
         this.updateUI();
       });
       track.appendChild(seg);
@@ -439,12 +389,12 @@ class StudioAnimator {
     frames.forEach((img, idx) => {
       const card = document.createElement('div');
       card.className = `thumb-card ${idx === this.currentFrame ? 'active' : ''}`;
-      card.innerHTML = `<img src="${img.src}" alt="Frame ${idx+1}"><span>F${idx+1}</span>`;
+      card.innerHTML = `<img src="${img.src}" alt="Frame ${idx+1}">`;
       card.addEventListener('click', () => {
         this.currentFrame = idx;
         this.isPlaying = false;
         const playBtn = document.getElementById('btn-play-pause');
-        if (playBtn) playBtn.textContent = '▶️ Reproduzir';
+        if (playBtn) playBtn.textContent = '▶️';
         this.updateUI();
       });
       container.appendChild(card);
@@ -463,10 +413,6 @@ class StudioAnimator {
   }
 
   updateUI() {
-    const total = this.getTotalFrames();
-    const frameInd = document.getElementById('current-frame-indicator');
-    if (frameInd) frameInd.textContent = `Quadro: ${this.currentFrame + 1} / ${total}`;
-
     document.querySelectorAll('.scrub-segment').forEach((seg, idx) => {
       seg.classList.toggle('active', idx === this.currentFrame);
     });
@@ -502,8 +448,6 @@ class StudioAnimator {
 
     const imgW = curImg.naturalWidth || 140;
     const imgH = curImg.naturalHeight || 160;
-    const resInd = document.getElementById('current-res-indicator');
-    if (resInd) resInd.textContent = `Tam: ${imgW} x ${imgH} px`;
 
     const drawW = imgW * this.zoom;
     const drawH = imgH * this.zoom;
@@ -512,18 +456,6 @@ class StudioAnimator {
     const dx = cx - drawW / 2;
     const dy = cy - drawH / 2;
 
-    if (this.showGrid) {
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-      ctx.lineWidth = 1;
-      for (let x = 0; x < w; x += 25) {
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
-      }
-      for (let y = 0; y < h; y += 25) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
-      }
-    }
-
-    // Linha do solo
     ctx.strokeStyle = '#06b6d4';
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -533,15 +465,6 @@ class StudioAnimator {
 
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(curImg, dx, dy, drawW, drawH);
-
-    if (this.showPivot) {
-      ctx.strokeStyle = '#ef4444';
-      ctx.lineWidth = 1.5;
-      const py = dy + drawH * 0.94;
-      ctx.beginPath(); ctx.arc(cx, py, 5, 0, Math.PI * 2); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(cx - 12, py); ctx.lineTo(cx + 12, py); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(cx, py - 12); ctx.lineTo(cx, py + 12); ctx.stroke();
-    }
   }
 }
 
@@ -550,17 +473,15 @@ class MetroidvaniaWorldGame {
   constructor() {
     this.canvas = document.getElementById('game-canvas');
     this.ctx = this.canvas.getContext('2d');
-    this.minimapCanvas = document.getElementById('minimap-canvas');
-    this.minimapCtx = this.minimapCanvas.getContext('2d');
 
-    this.viewWidth = this.canvas.width = 1024;
-    this.viewHeight = this.canvas.height = 570;
+    this.resizeCanvas();
+    window.addEventListener('resize', () => this.resizeCanvas());
 
     // Dimensões do Mundo Completo
     this.worldWidth = 3840;
     this.worldHeight = 2145;
 
-    // Jogador
+    // Jogador (5 Máscaras de Vida = 100 HP, 20 HP por máscara)
     this.player = {
       x: 350,
       y: 1580,
@@ -584,9 +505,9 @@ class MetroidvaniaWorldGame {
       isAttacking: false,
       attackTimer: 0,
       isDownslashing: false,
-      health: 100,
+      health: 100, // 5 Máscaras
       maxHealth: 100,
-      energy: 100,
+      energy: 100, // Soul Orb
       maxEnergy: 100,
       scrollsCollected: [],
       checkpointName: 'Vila dos Samurais'
@@ -646,25 +567,29 @@ class MetroidvaniaWorldGame {
 
     // Santuários de Meditação / Checkpoint
     this.meditationShrines = [
-      { x: 300, y: 1620, name: 'Santuário das Cerejeiras (Vila)', lit: true },
-      { x: 3200, y: 990, name: 'Santuário do Cume dos Espíritos', lit: true }
+      { x: 300, y: 1620, name: 'Santuário das Cerejeiras', lit: true },
+      { x: 3200, y: 990, name: 'Santuário dos Espíritos', lit: true }
     ];
 
     // Pergaminhos Sagrados
     this.scrolls = [
-      { id: 1, x: 690, y: 920, collected: false, name: 'Pergaminho do Pagoda Sagrado' },
-      { id: 2, x: 2810, y: 380, collected: false, name: 'Pergaminho das Alturas Astrais' },
-      { id: 3, x: 2400, y: 2040, collected: false, name: 'Pergaminho das Profundezas Místicas' }
+      { id: 1, x: 690, y: 920, collected: false, name: 'Pergaminho 1' },
+      { id: 2, x: 2810, y: 380, collected: false, name: 'Pergaminho 2' },
+      { id: 3, x: 2400, y: 2040, collected: false, name: 'Pergaminho 3' }
     ];
 
     // Efeitos Visuais
     this.particles = [];
     this.sakuraPetals = [];
     this.slashes = [];
-    this.damageNumbers = [];
 
     this.initSakura();
     this.setupControls();
+  }
+
+  resizeCanvas() {
+    this.viewWidth = this.canvas.width = window.innerWidth;
+    this.viewHeight = this.canvas.height = window.innerHeight;
   }
 
   initSakura() {
@@ -717,36 +642,6 @@ class MetroidvaniaWorldGame {
       }
     });
     this.canvas.addEventListener('contextmenu', e => e.preventDefault());
-
-    const bindBtn = (id, code, action) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.addEventListener('touchstart', (e) => { e.preventDefault(); if (action) action(); else this.keys[code] = true; });
-      el.addEventListener('touchend', (e) => { e.preventDefault(); this.keys[code] = false; });
-      el.addEventListener('mousedown', (e) => { if (action) action(); else this.keys[code] = true; });
-      el.addEventListener('mouseup', () => { this.keys[code] = false; });
-    };
-
-    bindBtn('vbtn-left', 'ArrowLeft');
-    bindBtn('vbtn-right', 'ArrowRight');
-    bindBtn('vbtn-jump', null, () => this.handleJumpPress());
-    bindBtn('vbtn-bash', null, () => this.trySpiritBash());
-    bindBtn('vbtn-atk', null, () => this.triggerAttack());
-    bindBtn('vbtn-interact', null, () => this.tryInteract());
-
-    const quickSaveBtn = document.getElementById('btn-quick-save');
-    if (quickSaveBtn) {
-      quickSaveBtn.addEventListener('click', () => {
-        this.saveProgress('Salvamento Rápido');
-      });
-    }
-
-    const pauseBtn = document.getElementById('btn-game-pause');
-    if (pauseBtn) {
-      pauseBtn.addEventListener('click', () => {
-        this.togglePause();
-      });
-    }
   }
 
   togglePause() {
@@ -805,7 +700,6 @@ class MetroidvaniaWorldGame {
       p.isGliding = false;
       sfx.playBash();
 
-      this.showToast('✨ Bash Espiritual Ativado!');
       for (let i = 0; i < 20; i++) {
         this.particles.push({
           x: closestWisp.x,
@@ -851,7 +745,6 @@ class MetroidvaniaWorldGame {
             p.canDoubleJump = true;
             p.isGliding = false;
             sfx.playPogo();
-            this.showToast('🍄 Pogo Bounce!');
             for (let i = 0; i < 10; i++) {
               this.particles.push({
                 x: mush.x + mush.w / 2,
@@ -879,7 +772,6 @@ class MetroidvaniaWorldGame {
         p.energy = p.maxEnergy;
         this.saveProgress(shrine.name);
         sfx.playSave();
-        this.showToast(`⛩️ ${shrine.name} - Meditação Concluída & Vida Restaurada!`);
         break;
       }
     }
@@ -888,7 +780,7 @@ class MetroidvaniaWorldGame {
   saveProgress(checkpointName) {
     this.player.checkpointName = checkpointName;
     saveManager.saveGame(this.player, checkpointName);
-    this.showToast(`💾 Jogo Salvo em: ${checkpointName}`);
+    this.showToast('JOGO SALVO');
   }
 
   loadProgress(saveData) {
@@ -904,9 +796,8 @@ class MetroidvaniaWorldGame {
       sc.collected = this.player.scrollsCollected.includes(sc.id);
     });
 
-    const scrollLabel = document.getElementById('game-scrolls-label');
-    if (scrollLabel) scrollLabel.textContent = `${this.player.scrollsCollected.length} / 3 📜`;
-    this.showToast(`📂 Jogo Carregado: ${this.player.checkpointName}`);
+    this.updateHollowKnightHUD();
+    this.showToast('CARREGADO');
     sfx.playSave();
   }
 
@@ -915,7 +806,7 @@ class MetroidvaniaWorldGame {
     if (!toast) return;
     toast.textContent = msg;
     toast.classList.add('show');
-    setTimeout(() => { toast.classList.remove('show'); }, 3000);
+    setTimeout(() => { toast.classList.remove('show'); }, 2000);
   }
 
   spawnDust(x, y, count = 4, color = 'rgba(148, 163, 184, 0.5)') {
@@ -933,6 +824,34 @@ class MetroidvaniaWorldGame {
     }
   }
 
+  updateHollowKnightHUD() {
+    const p = this.player;
+    // 1. Atualizar Máscaras de Vida (5 Máscaras)
+    const maskCount = 5;
+    const currentMasks = Math.ceil((p.health / p.maxHealth) * maskCount);
+    const container = document.getElementById('masks-container');
+    if (container) {
+      container.innerHTML = '';
+      for (let i = 0; i < maskCount; i++) {
+        const mask = document.createElement('div');
+        mask.className = `mask-unit ${i < currentMasks ? 'full' : 'empty'}`;
+        container.appendChild(mask);
+      }
+    }
+
+    // 2. Atualizar Orbe de Alma / Energia
+    const liquid = document.getElementById('soul-liquid');
+    if (liquid) {
+      liquid.style.height = `${(p.energy / p.maxEnergy) * 100}%`;
+    }
+
+    // 3. Atualizar Contador de Pergaminhos
+    const countEl = document.getElementById('hk-scroll-count');
+    if (countEl) {
+      countEl.textContent = p.scrollsCollected.length;
+    }
+  }
+
   update() {
     if (this.isPaused) return;
 
@@ -941,7 +860,7 @@ class MetroidvaniaWorldGame {
     const right = this.keys['KeyD'] || this.keys['ArrowRight'];
     const isSprint = this.keys['ShiftLeft'] || this.keys['ShiftRight'];
 
-    // Corrente de Vento no Abismo
+    // Corrente de Vento
     const wind = this.windChasm;
     const inWind = p.x >= wind.x && p.x <= wind.x + wind.w && p.y >= wind.y && p.y <= wind.y + wind.h;
     if (inWind) {
@@ -1029,20 +948,10 @@ class MetroidvaniaWorldGame {
           sc.collected = true;
           p.scrollsCollected.push(sc.id);
           sfx.playCollect();
-          this.showToast(`📜 ${sc.name} Descoberto! (${p.scrollsCollected.length}/3)`);
-          const scrollLabel = document.getElementById('game-scrolls-label');
-          if (scrollLabel) scrollLabel.textContent = `${p.scrollsCollected.length} / 3 📜`;
+          this.updateHollowKnightHUD();
         }
       }
     }
-
-    // Setor
-    let sectorName = 'Vila dos Samurais';
-    if (p.y > 1750) sectorName = 'Ruínas Subterrâneas & Tubulações';
-    else if (p.x > 2500) sectorName = 'Penhasco dos Espíritos & Ilhas Levitantes';
-    else if (p.x > 1700) sectorName = 'Ponte de Pedra & Rio das Almas';
-    const sectorLabel = document.getElementById('game-sector-label');
-    if (sectorLabel) sectorLabel.textContent = sectorName;
 
     // Animações
     if (p.isAttacking) {
@@ -1122,23 +1031,6 @@ class MetroidvaniaWorldGame {
     const wind = this.windChasm;
     ctx.fillStyle = 'rgba(56, 189, 248, 0.07)';
     ctx.fillRect(wind.x, wind.y, wind.w, wind.h);
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
-    ctx.setLineDash([8, 8]);
-    ctx.strokeRect(wind.x, wind.y, wind.w, wind.h);
-    ctx.setLineDash([]);
-
-    const windPhase = (Date.now() * 0.003) % 50;
-    ctx.fillStyle = 'rgba(56, 189, 248, 0.6)';
-    for (let wy = wind.y + 60; wy < wind.y + wind.h; wy += 90) {
-      const curY = wy - windPhase;
-      if (curY > wind.y && curY < wind.y + wind.h) {
-        ctx.beginPath();
-        ctx.moveTo(wind.x + wind.w / 2, curY);
-        ctx.lineTo(wind.x + wind.w / 2 - 16, curY + 20);
-        ctx.lineTo(wind.x + wind.w / 2 + 16, curY + 20);
-        ctx.fill();
-      }
-    }
 
     const wispTime = Date.now() * 0.003;
     for (const wisp of this.spiritWisps) {
@@ -1151,13 +1043,6 @@ class MetroidvaniaWorldGame {
       ctx.strokeStyle = wisp.color;
       ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(curX, curY, wisp.auraRadius + Math.sin(wispTime * 3) * 4, 0, Math.PI * 2); ctx.stroke();
-    }
-
-    for (const mush of this.pogoMushrooms) {
-      ctx.fillStyle = mush.color;
-      ctx.beginPath();
-      ctx.ellipse(mush.x + mush.w / 2, mush.y + 10, mush.w / 2, mush.h / 2, 0, 0, Math.PI * 2);
-      ctx.fill();
     }
 
     for (const sc of this.scrolls) {
@@ -1236,44 +1121,6 @@ class MetroidvaniaWorldGame {
     }
 
     ctx.restore();
-    this.renderMinimap();
-  }
-
-  renderMinimap() {
-    const mctx = this.minimapCtx;
-    const mw = this.minimapCanvas.width;
-    const mh = this.minimapCanvas.height;
-
-    mctx.clearRect(0, 0, mw, mh);
-
-    mctx.fillStyle = '#0f172a';
-    mctx.fillRect(0, 0, mw, mh);
-
-    // Setores no Minimapa
-    mctx.fillStyle = 'rgba(21, 128, 61, 0.4)';
-    mctx.fillRect(0, mh * 0.5, mw * 0.45, mh * 0.3);
-
-    mctx.fillStyle = 'rgba(2, 132, 199, 0.6)';
-    mctx.fillRect(mw * 0.45, mh * 0.5, mw * 0.15, mh * 0.4);
-
-    mctx.fillStyle = 'rgba(100, 116, 139, 0.4)';
-    mctx.fillRect(mw * 0.6, mh * 0.1, mw * 0.4, mh * 0.7);
-
-    mctx.fillStyle = 'rgba(67, 56, 202, 0.3)';
-    mctx.fillRect(0, mh * 0.85, mw, mh * 0.15);
-
-    const px = (this.player.x / this.worldWidth) * mw;
-    const py = (this.player.y / this.worldHeight) * mh;
-
-    mctx.fillStyle = '#fbbf24';
-    mctx.beginPath(); mctx.arc(px, py, 3.5, 0, Math.PI * 2); mctx.fill();
-
-    for (const sh of this.meditationShrines) {
-      const sx = (sh.x / this.worldWidth) * mw;
-      const sy = (sh.y / this.worldHeight) * mh;
-      mctx.fillStyle = '#38bdf8';
-      mctx.fillRect(sx - 2, sy - 2, 4, 4);
-    }
   }
 }
 
@@ -1292,6 +1139,7 @@ function setupMainMenu(game) {
       game.player.x = 350;
       game.player.y = 1580;
       game.player.health = 100;
+      game.updateHollowKnightHUD();
       sfx.init();
       sfx.playSave();
     });
@@ -1322,15 +1170,24 @@ function setupMainMenu(game) {
   if (studioBtn) {
     studioBtn.addEventListener('click', () => {
       menuOverlay.classList.add('hidden');
-      const tabStudioBtn = document.getElementById('tab-studio-btn');
-      if (tabStudioBtn) tabStudioBtn.click();
+      document.getElementById('tab-game').classList.remove('active');
+      document.getElementById('tab-studio').classList.add('active');
     });
   }
 
-  const headerMenuBtn = document.getElementById('btn-header-menu');
-  if (headerMenuBtn) {
-    headerMenuBtn.addEventListener('click', () => {
-      menuOverlay.classList.remove('hidden');
+  const switchStudioBtn = document.getElementById('btn-switch-studio');
+  if (switchStudioBtn) {
+    switchStudioBtn.addEventListener('click', () => {
+      document.getElementById('tab-game').classList.remove('active');
+      document.getElementById('tab-studio').classList.add('active');
+    });
+  }
+
+  const backToGameBtn = document.getElementById('btn-back-to-game');
+  if (backToGameBtn) {
+    backToGameBtn.addEventListener('click', () => {
+      document.getElementById('tab-studio').classList.remove('active');
+      document.getElementById('tab-game').classList.add('active');
     });
   }
 
@@ -1359,16 +1216,16 @@ function setupMainMenu(game) {
   if (modalSaveBtn) {
     modalSaveBtn.addEventListener('click', () => {
       game.saveProgress('Menu de Opções');
-      document.getElementById('save-info-msg').textContent = '✅ Jogo salvo com sucesso!';
+      document.getElementById('save-info-msg').textContent = 'Salvo.';
     });
   }
 
   const clearSaveBtn = document.getElementById('btn-modal-clear-save');
   if (clearSaveBtn) {
     clearSaveBtn.addEventListener('click', () => {
-      if (confirm('Tem certeza de que deseja apagar os dados salvos?')) {
+      if (confirm('Apagar dados salvos?')) {
         saveManager.clearSave();
-        document.getElementById('save-info-msg').textContent = '🗑️ Dados salvos apagados.';
+        document.getElementById('save-info-msg').textContent = 'Apagado.';
       }
     });
   }
@@ -1411,22 +1268,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     setupMainMenu(game);
     if (studio.canvas) studio.selectAnimation('idle');
-
-    const tabs = {
-      'tab-game-btn': 'tab-game',
-      'tab-studio-btn': 'tab-studio'
-    };
-    Object.entries(tabs).forEach(([btnId, tabId]) => {
-      const btn = document.getElementById(btnId);
-      if (!btn) return;
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById(tabId).classList.add('active');
-        sfx.init();
-      });
-    });
+    game.updateHollowKnightHUD();
 
     function mainLoop(timestamp) {
       studio.render(timestamp);

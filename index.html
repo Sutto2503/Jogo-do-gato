@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gatinho Samurai: Ecos Místicos - Metroidvania 2D</title>
+  <title>Gatinho Samurai: Ecos Místicos</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="clean-ui">
   <!-- MENU PRINCIPAL INICIAL DO JOGO -->
   <div id="main-menu-overlay" class="main-menu-screen">
     <div class="menu-particles-bg" id="menu-particles"></div>
@@ -18,35 +18,26 @@
         <div class="logo-emblem">🐱⚔️</div>
         <h1>GATINHO SAMURAI</h1>
         <h2>ECOS MÍSTICOS</h2>
-        <div class="sub-inspired">Inspirado em Hollow Knight, Ori e Nine Sols</div>
         <div class="logo-divider"><span>⛩️</span></div>
       </div>
 
       <div class="menu-buttons-list">
         <button id="menu-btn-new-game" class="menu-btn btn-hero">
-          <span class="btn-icon">⚔️</span>
-          <span class="btn-text">INICIAR NOVO JOGO</span>
+          <span class="btn-text">NOVO JOGO</span>
         </button>
 
         <button id="menu-btn-load-game" class="menu-btn">
-          <span class="btn-icon">💾</span>
-          <span class="btn-text">CARREGAR JOGO SALVO</span>
+          <span class="btn-text">CONTINUAR</span>
           <span class="save-status-tag" id="main-menu-save-tag">Nenhum save</span>
         </button>
 
         <button id="menu-btn-options" class="menu-btn">
-          <span class="btn-icon">⚙️</span>
-          <span class="btn-text">OPÇÕES & CONFIGURAÇÕES</span>
+          <span class="btn-text">OPÇÕES</span>
         </button>
 
         <button id="menu-btn-studio" class="menu-btn btn-secondary">
-          <span class="btn-icon">🎬</span>
           <span class="btn-text">ESTÚDIO DE ANIMAÇÕES</span>
         </button>
-      </div>
-
-      <div class="menu-footer-hints">
-        <span>🎮 Controles: <kbd>A</kbd> <kbd>D</kbd> Mover | <kbd>W</kbd> Pulo / Pulo Duplo / Planar | <kbd>Q</kbd>/<kbd>Mouse Dir</kbd> Bash nos Wisps | <kbd>J</kbd> Katana | <kbd>S+J</kbd> Pogo | <kbd>E</kbd> Meditar</span>
       </div>
     </div>
   </div>
@@ -55,40 +46,30 @@
   <div id="options-modal" class="modal-overlay">
     <div class="modal-card">
       <div class="modal-header">
-        <h3>⚙️ Opções Gerais do Jogo</h3>
+        <h3>Opções</h3>
         <button id="btn-close-options" class="modal-close-btn">&times;</button>
       </div>
       <div class="modal-body">
         <div class="option-row">
-          <label for="opt-sfx-vol">Volume Efeitos Sonoros (SFX): <strong id="sfx-vol-val">80%</strong></label>
+          <label for="opt-sfx-vol">SFX: <strong id="sfx-vol-val">80%</strong></label>
           <input type="range" id="opt-sfx-vol" min="0" max="100" value="80">
         </div>
 
         <div class="option-row">
-          <label for="opt-bgm-vol">Música de Fundo & Atmosfera: <strong id="bgm-vol-val">70%</strong></label>
+          <label for="opt-bgm-vol">Música: <strong id="bgm-vol-val">70%</strong></label>
           <input type="range" id="opt-bgm-vol" min="0" max="100" value="70">
         </div>
 
-        <div class="option-row">
-          <label for="opt-particles">Qualidade de Partículas & Luzes:</label>
-          <select id="opt-particles">
-            <option value="high">Alto (Luzes Volumétricas, Pétalas e Wisps)</option>
-            <option value="medium">Médio (Padrão)</option>
-            <option value="low">Baixo</option>
-          </select>
-        </div>
-
         <div class="option-row save-management-box">
-          <h4>Gerenciamento de Save:</h4>
           <div class="save-actions">
-            <button id="btn-modal-save-now" class="btn-sm btn-primary">💾 Salvar Agora</button>
-            <button id="btn-modal-clear-save" class="btn-sm btn-danger">🗑️ Apagar Save</button>
+            <button id="btn-modal-save-now" class="btn-sm btn-primary">Salvar Jogo</button>
+            <button id="btn-modal-clear-save" class="btn-sm btn-danger">Apagar Save</button>
           </div>
-          <p id="save-info-msg" class="save-info-text">Nenhum dado salvo encontrado.</p>
+          <p id="save-info-msg" class="save-info-text"></p>
         </div>
       </div>
       <div class="modal-footer">
-        <button id="btn-save-options" class="btn-primary">Fechar</button>
+        <button id="btn-save-options" class="btn-primary">Concluir</button>
       </div>
     </div>
   </div>
@@ -97,258 +78,98 @@
   <div id="pause-menu-overlay" class="modal-overlay">
     <div class="modal-card pause-card">
       <div class="modal-header">
-        <h3>⏸️ JOGO PAUSADO</h3>
+        <h3>PAUSA</h3>
       </div>
       <div class="pause-menu-list">
-        <button id="btn-resume-game" class="menu-btn btn-hero">▶️ CONTINUAR JOGANDO</button>
-        <button id="btn-save-game-pause" class="menu-btn">💾 SALVAR PROGRESSO</button>
-        <button id="btn-pause-options" class="menu-btn">⚙️ OPÇÕES</button>
-        <button id="btn-quit-to-main" class="menu-btn btn-secondary">🏠 MENU PRINCIPAL</button>
+        <button id="btn-resume-game" class="menu-btn btn-hero">CONTINUAR</button>
+        <button id="btn-save-game-pause" class="menu-btn">SALVAR</button>
+        <button id="btn-pause-options" class="menu-btn">OPÇÕES</button>
+        <button id="btn-quit-to-main" class="menu-btn btn-secondary">MENU PRINCIPAL</button>
       </div>
     </div>
   </div>
 
-  <!-- APLICAÇÃO PRINCIPAL -->
-  <div class="app-container" id="game-app-container">
-    <header class="main-header">
-      <div class="logo-group">
-        <button id="btn-header-menu" class="nav-btn-home" title="Menu Principal">🏠</button>
-        <div class="logo-badge">🐱⚔️</div>
-        <div>
-          <h1>GATINHO SAMURAI</h1>
-          <p class="subtitle">Metroidvania 2D: Vila, Rio Sagrado, Penhascos & Cavernas</p>
+  <!-- CONTAINER PRINCIPAL DO JOGO -->
+  <div class="game-viewport-wrapper">
+    <!-- JOGO CANVAS -->
+    <div id="tab-game" class="tab-view active">
+      <div class="canvas-screen">
+        <canvas id="game-canvas" width="1280" height="720"></canvas>
+
+        <!-- HUD MINIMALISTA ESTILO HOLLOW KNIGHT -->
+        <div class="hk-hud">
+          <!-- Orbe / Vaso de Alma (Energia/Magia) -->
+          <div class="soul-orb" id="soul-orb">
+            <div class="soul-liquid" id="soul-liquid" style="height: 100%;"></div>
+            <div class="soul-glass-glare"></div>
+          </div>
+
+          <div class="hud-center-stack">
+            <!-- Máscaras / Cristais de Vida (Estilo Hollow Knight Masks) -->
+            <div class="masks-container" id="masks-container">
+              <div class="mask-unit full"></div>
+              <div class="mask-unit full"></div>
+              <div class="mask-unit full"></div>
+              <div class="mask-unit full"></div>
+              <div class="mask-unit full"></div>
+            </div>
+
+            <!-- Contador Sutil de Colecionáveis (Geo / Pergaminhos) -->
+            <div class="scroll-counter">
+              <span class="scroll-icon">📜</span>
+              <span class="scroll-number" id="hk-scroll-count">0</span>
+            </div>
+          </div>
         </div>
+
+        <div class="save-toast" id="save-toast">Salvo</div>
+
+        <!-- Botão discreto para alternar para o Estúdio -->
+        <button id="btn-switch-studio" class="btn-corner-tool" title="Estúdio de Animações">🎬</button>
       </div>
-      <div class="header-nav">
-        <button id="tab-game-btn" class="nav-btn active">
-          <span class="icon">🎮</span> Jogo Metroidvania
-        </button>
-        <button id="tab-studio-btn" class="nav-btn">
-          <span class="icon">🎬</span> Estúdio de Animações
-        </button>
+    </div>
+
+    <!-- ESTÚDIO DE ANIMAÇÕES -->
+    <div id="tab-studio" class="tab-view">
+      <div class="studio-topbar">
+        <button id="btn-back-to-game" class="btn-tool btn-primary">◀ Voltar ao Jogo</button>
+        <h2 id="current-anim-name">IDLE</h2>
       </div>
-    </header>
-
-    <!-- TAB 1: JOGO METROIDVANIA -->
-    <section id="tab-game" class="tab-content active">
-      <div class="game-wrapper">
-        <!-- HUD Superior & Minimapa -->
-        <div class="game-hud-panel">
-          <div class="hud-left">
-            <div class="hud-bar-group">
-              <span class="hud-label">VIDA:</span>
-              <div class="hud-bar-bg health-bar">
-                <div class="hud-bar-fill" id="hud-hp-fill" style="width: 100%;"></div>
-              </div>
-              <span class="hud-val" id="hud-hp-text">100 / 100</span>
-            </div>
-
-            <div class="hud-bar-group">
-              <span class="hud-label">ENERGIA:</span>
-              <div class="hud-bar-bg energy-bar">
-                <div class="hud-bar-fill" id="hud-energy-fill" style="width: 100%;"></div>
-              </div>
-              <span class="hud-val" id="hud-energy-text">100%</span>
-            </div>
-          </div>
-
-          <div class="hud-center">
-            <div class="stat-pill"><span class="label">SETOR:</span> <strong id="game-sector-label">Vila dos Samurais</strong></div>
-            <div class="stat-pill"><span class="label">PERGAMINHOS:</span> <strong id="game-scrolls-label">0 / 3 📜</strong></div>
-          </div>
-
-          <div class="hud-right">
-            <button id="btn-quick-save" class="btn-hud" title="Salvar Jogo">💾 Salvar</button>
-            <button id="btn-game-pause" class="btn-hud" title="Pausar (ESC)">⏸️ Pausa</button>
-          </div>
-        </div>
-
-        <!-- Canvas do Mundo & Minimapa Overlay -->
-        <div class="game-canvas-container">
-          <canvas id="game-canvas" width="1024" height="570"></canvas>
-          
-          <!-- Minimapa no Canto Superior Direito -->
-          <div class="minimap-box" id="minimap-box">
-            <div class="minimap-header">MINIMAPA DO MUNDO</div>
-            <canvas id="minimap-canvas" width="180" height="100"></canvas>
-            <div class="minimap-legend">
-              <span>🐱 Você</span>
-              <span>⛩️ Checkpoint</span>
-              <span>📜 Item</span>
-            </div>
-          </div>
-
-          <div class="game-floating-msg" id="game-floating-msg">
-            Explore a Vila à esquerda, atravesse a Ponte sobre o Rio Sagrado e use Bash nos Wisps para escalar o Penhasco!
-          </div>
-
-          <div class="save-toast" id="save-toast">💾 Jogo Salvo com Sucesso!</div>
-
-          <!-- Controles Touch para Mobile / Telas Táteis -->
-          <div class="virtual-controls">
-            <div class="d-pad">
-              <button class="v-btn" id="vbtn-left">◀</button>
-              <button class="v-btn" id="vbtn-right">▶</button>
-            </div>
-            <div class="action-pad">
-              <button class="v-btn v-btn-interact" id="vbtn-interact">⛩️ MEDITAR</button>
-              <button class="v-btn v-btn-jump" id="vbtn-jump">⬆ PULO / PLANAR</button>
-              <button class="v-btn v-btn-bash" id="vbtn-bash">✨ BASH / GANCHO</button>
-              <button class="v-btn v-btn-atk" id="vbtn-atk">⚔️ ATAQUE / POGO</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Guia dos 4 Setores do Mapa -->
-        <div class="game-guide-cards">
-          <div class="guide-card">
-            <h4>🏮 Setor 1: Vila & Pagoda Sagrado (Oeste)</h4>
-            <p>Telhados dos templos, santuário de descanso e árvores de cerejeira Sakura com queda de pétalas.</p>
-          </div>
-          <div class="guide-card">
-            <h4>🌊 Setor 2: Ponte & Rio das Almas (Centro)</h4>
-            <p>Ponte de pedra ancestral sobre o rio luminoso com correntes de vapor que impulsionam o planador.</p>
-          </div>
-          <div class="guide-card">
-            <h4>✨ Setor 3: Penhascos & Wisps (Leste)</h4>
-            <p>Escalada vertical em paredões com <strong>Bash nos Espíritos</strong> (<kbd>Q</kbd>) e <strong>Pogo</strong> nos cogumelos (<kbd>S+J</kbd>).</p>
-          </div>
-          <div class="guide-card">
-            <h4>⛏️ Setor 4: Ruínas & Tubulações (Subsolo)</h4>
-            <p>Cavernas subterrâneas com encanamentos antigos, passagens secretas e pergaminhos sagrados.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 2: ESTÚDIO DE ANIMAÇÕES -->
-    <section id="tab-studio" class="tab-content">
       <div class="studio-layout">
         <aside class="anim-sidebar">
-          <h3>SELECIONE A ANIMAÇÃO</h3>
           <div class="anim-cards">
-            <button class="anim-card active" data-anim="idle">
-              <div class="card-icon">🧘</div>
-              <div class="card-info">
-                <h4>IDLE (Postura de Guarda)</h4>
-                <p>Respiração equilibrada</p>
-              </div>
-              <span class="badge">4 FPS</span>
-            </button>
-
-            <button class="anim-card" data-anim="walk">
-              <div class="card-icon">🐾</div>
-              <div class="card-info">
-                <h4>WALK (Caminhada Fluida)</h4>
-                <p>Passos rítmicos sincronizados</p>
-              </div>
-              <span class="badge">8 FPS</span>
-            </button>
-
-            <button class="anim-card" data-anim="run">
-              <div class="card-icon">⚡</div>
-              <div class="card-info">
-                <h4>RUN (Corrida / Dash)</h4>
-                <p>Tronco inclinado e quimono</p>
-              </div>
-              <span class="badge">11 FPS</span>
-            </button>
-
-            <button class="anim-card" data-anim="jump">
-              <div class="card-icon">🌪️</div>
-              <div class="card-info">
-                <h4>JUMP (Pulo & Queda)</h4>
-                <p>Impulso, arco no ar e aterrissagem</p>
-              </div>
-              <span class="badge">6 FPS</span>
-            </button>
-
-            <button class="anim-card" data-anim="attack">
-              <div class="card-icon">🔥</div>
-              <div class="card-info">
-                <h4>ATTACK (Katana Flamejante)</h4>
-                <p>Corte descendente de fogo</p>
-              </div>
-              <span class="badge">10 FPS</span>
-            </button>
-
-            <button class="anim-card" data-anim="turn">
-              <div class="card-icon">🔄</div>
-              <div class="card-info">
-                <h4>VURN / TURN (Rotação)</h4>
-                <p>4 ângulos de postura</p>
-              </div>
-              <span class="badge">4 FPS</span>
-            </button>
+            <button class="anim-card active" data-anim="idle">IDLE</button>
+            <button class="anim-card" data-anim="walk">WALK</button>
+            <button class="anim-card" data-anim="run">RUN</button>
+            <button class="anim-card" data-anim="jump">JUMP</button>
+            <button class="anim-card" data-anim="attack">ATTACK</button>
+            <button class="anim-card" data-anim="turn">TURN</button>
           </div>
         </aside>
 
         <main class="studio-viewport-panel">
-          <div class="viewport-header">
-            <div class="anim-title-desc">
-              <h2 id="current-anim-name">IDLE (Postura de Guarda)</h2>
-              <p id="current-anim-desc">Postura equilibrada do samurai observando o cenário.</p>
-            </div>
-            <div class="viewport-tags">
-              <span class="tag" id="current-frame-indicator">Quadro: 1 / 2</span>
-              <span class="tag tag-dim" id="current-res-indicator">Tam: 140 x 160 px</span>
-            </div>
-          </div>
-
           <div class="stage-container" id="stage-box">
             <canvas id="studio-canvas" width="600" height="380"></canvas>
-            <div class="stage-overlay-info">
-              <span id="fps-display">8 FPS</span>
-              <span id="zoom-display">2.0x</span>
-            </div>
           </div>
 
           <div class="timeline-bar">
             <div class="timeline-controls">
-              <button id="btn-prev-frame" class="btn-tool" title="Quadro Anterior">⏮️</button>
-              <button id="btn-play-pause" class="btn-tool btn-primary" title="Play/Pause">⏸️ Pausar</button>
-              <button id="btn-next-frame" class="btn-tool" title="Próximo Quadro">⏭️</button>
-              <button id="btn-restart" class="btn-tool" title="Reiniciar">🔄</button>
+              <button id="btn-prev-frame" class="btn-tool">⏮️</button>
+              <button id="btn-play-pause" class="btn-tool btn-primary">⏸️</button>
+              <button id="btn-next-frame" class="btn-tool">⏭️</button>
+              <button id="btn-restart" class="btn-tool">🔄</button>
             </div>
-
             <div class="timeline-scrubber">
               <div class="scrub-track" id="scrub-track"></div>
-            </div>
-
-            <div class="tool-toggles">
-              <label class="btn-tool-check"><input type="checkbox" id="toggle-onion"> 🧅 Ghost</label>
-              <label class="btn-tool-check"><input type="checkbox" id="toggle-grid"> 📏 Grade</label>
-              <label class="btn-tool-check"><input type="checkbox" id="toggle-pivot" checked> 🎯 Âncora</label>
-            </div>
-          </div>
-
-          <div class="studio-settings-row">
-            <div class="setting-item">
-              <label for="speed-slider">Velocidade (FPS: <span id="speed-val">8</span>):</label>
-              <input type="range" id="speed-slider" min="1" max="30" value="8" step="1">
-            </div>
-            <div class="setting-item">
-              <label for="zoom-slider">Zoom (<span id="zoom-val">2.0</span>x):</label>
-              <input type="range" id="zoom-slider" min="1" max="4" value="2" step="0.25">
-            </div>
-            <div class="setting-item">
-              <label for="bg-select">Fundo do Palco:</label>
-              <select id="bg-select">
-                <option value="dark">Dojo Escuro (Rúnico)</option>
-                <option value="transparent">Grade Transparente</option>
-                <option value="black">Preto Puro</option>
-                <option value="teal">Verde Azulado</option>
-              </select>
             </div>
           </div>
 
           <div class="frames-strip-container">
-            <h4>QUADROS INDIVIDUAIS (Clique para focar):</h4>
             <div class="frame-thumbnails" id="frame-thumbs"></div>
           </div>
         </main>
       </div>
-    </section>
+    </div>
   </div>
 
   <script src="assets_bundle.js"></script>
