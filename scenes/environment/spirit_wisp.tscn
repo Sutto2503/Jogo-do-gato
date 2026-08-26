@@ -1,0 +1,24 @@
+[gd_scene load_steps=3 format=3 uid="uid://cspiritwisp901"]
+
+[ext_resource type="Script" path="res://scenes/environment/spirit_wisp.gd" id="1_script"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_wisp"]
+radius = 28.0
+
+[node name="SpiritWisp" type="Area2D" groups=["SpiritWisp"]]
+collision_layer = 8
+collision_mask = 2
+script = ExtResource("1_script")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_wisp")
+
+[node name="GlowParticles" type="CPUParticles2D" parent="."]
+amount = 16
+lifetime = 0.8
+emission_shape = 1
+emission_sphere_radius = 8.0
+gravity = Vector2(0, -15)
+scale_amount_min = 2.0
+scale_amount_max = 4.5
+color = Color(0.98, 0.85, 0.45, 0.9)

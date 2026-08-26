@@ -1,0 +1,137 @@
+[gd_scene load_steps=14 format=3 uid="uid://cworld4k999"]
+
+[ext_resource type="Script" path="res://scenes/levels/metroidvania_world.gd" id="1_worldscript"]
+[ext_resource type="PackedScene" uid="uid://b7vplayer678" path="res://scenes/player/player.tscn" id="2_playerscn"]
+[ext_resource type="PackedScene" uid="uid://cspiritwisp901" path="res://scenes/environment/spirit_wisp.gd" id="3_wisp"]
+[ext_resource type="PackedScene" uid="uid://cpogomush802" path="res://scenes/environment/pogo_mushroom.tscn" id="4_mush"]
+[ext_resource type="PackedScene" uid="uid://cmedshrine303" path="res://scenes/environment/meditation_shrine.tscn" id="5_shrine"]
+[ext_resource type="Texture2D" uid="uid://w4kmap" path="res://assets/environment/world_map_4k.png" id="6_worldart"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_sec1_ground"]
+size = Vector2(1800, 120)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_bridge"]
+size = Vector2(850, 60)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_sec3_ground"]
+size = Vector2(1200, 120)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_cliff_face"]
+size = Vector2(100, 1400)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_cliff_overhang"]
+size = Vector2(600, 50)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_subterranean_floor"]
+size = Vector2(3840, 150)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floating_rock"]
+size = Vector2(140, 40)
+
+[node name="MetroidvaniaWorld" type="Node2D"]
+script = ExtResource("1_worldscript")
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+
+[node name="SkyLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_scale = Vector2(0.1, 0.1)
+
+[node name="SkyBackdrop" type="ColorRect" parent="ParallaxBackground/SkyLayer"]
+offset_left = -2000.0
+offset_top = -1200.0
+offset_right = 6000.0
+offset_bottom = 3500.0
+color = Color(0.06, 0.08, 0.14, 1)
+
+[node name="WorldMapArt" type="Sprite2D" parent="."]
+position = Vector2(1920, 1072)
+texture = ExtResource("6_worldart")
+
+[node name="StaticColliders" type="Node2D" parent="."]
+
+[node name="Sector1_VillageGround" type="StaticBody2D" parent="StaticColliders"]
+position = Vector2(900, 1720)
+collision_layer = 1
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticColliders/Sector1_VillageGround"]
+shape = SubResource("RectangleShape2D_sec1_ground")
+
+[node name="Sector2_StoneBridge" type="StaticBody2D" parent="StaticColliders"]
+position = Vector2(2150, 1570)
+collision_layer = 1
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticColliders/Sector2_StoneBridge"]
+shape = SubResource("RectangleShape2D_bridge")
+
+[node name="Sector3_WildernessGround" type="StaticBody2D" parent="StaticColliders"]
+position = Vector2(3180, 1720)
+collision_layer = 1
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticColliders/Sector3_WildernessGround"]
+shape = SubResource("RectangleShape2D_sec3_ground")
+
+[node name="Sector3_CliffWall" type="StaticBody2D" parent="StaticColliders"]
+position = Vector2(2850, 800)
+collision_layer = 1
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticColliders/Sector3_CliffWall"]
+shape = SubResource("RectangleShape2D_cliff_face")
+
+[node name="Sector3_CliffOverhang" type="StaticBody2D" parent="StaticColliders"]
+position = Vector2(3300, 1080)
+collision_layer = 1
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticColliders/Sector3_CliffOverhang"]
+shape = SubResource("RectangleShape2D_cliff_overhang")
+one_way_collision = true
+
+[node name="Sector4_SubterraneanFloor" type="StaticBody2D" parent="StaticColliders"]
+position = Vector2(1920, 2140)
+collision_layer = 1
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticColliders/Sector4_SubterraneanFloor"]
+shape = SubResource("RectangleShape2D_subterranean_floor")
+
+[node name="FloatingRock_1" type="StaticBody2D" parent="StaticColliders"]
+position = Vector2(2510, 890)
+collision_layer = 1
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticColliders/FloatingRock_1"]
+shape = SubResource("RectangleShape2D_floating_rock")
+one_way_collision = true
+
+[node name="FloatingRock_2" type="StaticBody2D" parent="StaticColliders"]
+position = Vector2(2690, 670)
+collision_layer = 1
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticColliders/FloatingRock_2"]
+shape = SubResource("RectangleShape2D_floating_rock")
+one_way_collision = true
+
+[node name="InteractiveObjects" type="Node2D" parent="."]
+
+[node name="SpiritWisp_1" parent="InteractiveObjects" instance=ExtResource("3_wisp")]
+position = Vector2(2510, 780)
+
+[node name="SpiritWisp_2" parent="InteractiveObjects" instance=ExtResource("3_wisp")]
+position = Vector2(2680, 520)
+
+[node name="PogoMushroom_1" parent="InteractiveObjects" instance=ExtResource("4_mush")]
+position = Vector2(2980, 1640)
+
+[node name="PogoMushroom_2" parent="InteractiveObjects" instance=ExtResource("4_mush")]
+position = Vector2(3520, 1640)
+
+[node name="MeditationShrine" parent="InteractiveObjects" instance=ExtResource("5_shrine")]
+position = Vector2(320, 1620)
+
+[node name="Player" parent="." instance=ExtResource("2_playerscn")]
+position = Vector2(400, 1620)
