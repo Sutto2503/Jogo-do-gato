@@ -1,0 +1,24 @@
+[gd_scene load_steps=3 format=3 uid="uid://cwindcurrent456"]
+
+[ext_resource type="Script" path="res://scenes/environment/wind_current.gd" id="1_script"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wind"]
+size = Vector2(120, 320)
+
+[node name="WindCurrent" type="Area2D"]
+collision_layer = 16
+collision_mask = 2
+script = ExtResource("1_script")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_wind")
+
+[node name="WindParticles" type="CPUParticles2D" parent="."]
+amount = 20
+lifetime = 1.5
+emission_shape = 3
+emission_rect_extents = Vector2(50, 150)
+gravity = Vector2(0, -300)
+scale_amount_min = 1.5
+scale_amount_max = 3.0
+color = Color(0.6, 0.9, 1, 0.4)

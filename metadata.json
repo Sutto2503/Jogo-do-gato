@@ -1,0 +1,6 @@
+{
+  "name": "Gatinho Samurai",
+  "description": "Jogo 2D e estúdio de animação do Gatinho Samurai com movimentação fluida, combate com katana flamejante, gancho místico e cenários temáticos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

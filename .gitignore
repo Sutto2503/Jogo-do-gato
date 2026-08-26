@@ -1,0 +1,12 @@
+# Godot 4 specific ignores
+.godot/
+*.tmp
+
+# Python ignores
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS ignores
+.DS_Store
+Thumbs.db

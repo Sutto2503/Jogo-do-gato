@@ -1,0 +1,73 @@
+[gd_scene load_steps=5 format=3 uid="uid://b7vplayer678"]
+
+[ext_resource type="Script" path="res://scenes/player/player.gd" id="1_script"]
+[ext_resource type="SpriteFrames" uid="uid://cmk4b7n6v8e2p" path="res://scenes/player/player_sprite_frames.tres" id="2_frames"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_p"]
+radius = 18.0
+height = 68.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_atk"]
+size = Vector2(55, 60)
+
+[node name="Player" type="CharacterBody2D" groups=["Player"]]
+collision_layer = 2
+collision_mask = 5
+script = ExtResource("1_script")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, -38)
+scale = Vector2(0.24, 0.24)
+sprite_frames = ExtResource("2_frames")
+animation = &"idle"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -34)
+shape = SubResource("CapsuleShape2D_p")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(0, -60)
+zoom = Vector2(1.6, 1.6)
+process_callback = 0
+position_smoothing_enabled = true
+position_smoothing_speed = 6.0
+drag_horizontal_enabled = true
+drag_vertical_enabled = true
+drag_left_margin = 0.15
+drag_top_margin = 0.2
+drag_right_margin = 0.15
+drag_bottom_margin = 0.2
+
+[node name="GrappleRayCast" type="RayCast2D" parent="."]
+position = Vector2(0, -34)
+target_position = Vector2(400, -200)
+collision_mask = 8
+
+[node name="GrappleLine" type="Line2D" parent="."]
+visible = false
+width = 3.0
+default_color = Color(0.2, 0.85, 0.95, 0.9)
+
+[node name="AttackArea2D" type="Area2D" parent="."]
+position = Vector2(25, -34)
+collision_layer = 0
+collision_mask = 4
+monitoring = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea2D"]
+shape = SubResource("RectangleShape2D_atk")
+
+[node name="DustParticles" type="CPUParticles2D" parent="."]
+emitting = false
+amount = 6
+lifetime = 0.4
+one_shot = true
+explosiveness = 0.8
+direction = Vector2(0, -1)
+spread = 45.0
+gravity = Vector2(0, 180)
+initial_velocity_min = 30.0
+initial_velocity_max = 60.0
+scale_amount_min = 2.0
+scale_amount_max = 4.0
+color = Color(0.9, 0.85, 0.75, 0.6)

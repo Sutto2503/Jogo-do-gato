@@ -1,0 +1,114 @@
+[gd_resource type="SpriteFrames" load_steps=18 format=3 uid="uid://cmk4b7n6v8e2p"]
+
+[ext_resource type="Texture2D" uid="uid://b1" path="res://assets/transparent_cats/gato_samurai_1.png" id="1_walk1"]
+[ext_resource type="Texture2D" uid="uid://b2" path="res://assets/transparent_cats/gato_samurai_2.png" id="2_walk2"]
+[ext_resource type="Texture2D" uid="uid://b3" path="res://assets/transparent_cats/gato_samurai_3.png" id="3_walk3"]
+[ext_resource type="Texture2D" uid="uid://b4" path="res://assets/transparent_cats/gato_samurai_4.png" id="4_walk4"]
+[ext_resource type="Texture2D" uid="uid://r0" path="res://assets/frames/run/frame_0.png" id="5_run0"]
+[ext_resource type="Texture2D" uid="uid://r1" path="res://assets/frames/run/frame_1.png" id="6_run1"]
+[ext_resource type="Texture2D" uid="uid://r2" path="res://assets/frames/run/frame_2.png" id="7_run2"]
+[ext_resource type="Texture2D" uid="uid://r3" path="res://assets/frames/run/frame_3.png" id="8_run3"]
+[ext_resource type="Texture2D" uid="uid://r4" path="res://assets/frames/run/frame_4.png" id="9_run4"]
+[ext_resource type="Texture2D" uid="uid://j0" path="res://assets/frames/jump/frame_0.png" id="10_j0"]
+[ext_resource type="Texture2D" uid="uid://j1" path="res://assets/frames/jump/frame_1.png" id="11_j1"]
+[ext_resource type="Texture2D" uid="uid://j2" path="res://assets/frames/jump/frame_2.png" id="12_j2"]
+[ext_resource type="Texture2D" uid="uid://a0" path="res://assets/frames/attack/frame_0.png" id="13_a0"]
+[ext_resource type="Texture2D" uid="uid://a1" path="res://assets/frames/attack/frame_1.png" id="14_a1"]
+[ext_resource type="Texture2D" uid="uid://a2" path="res://assets/frames/attack/frame_2.png" id="15_a2"]
+[ext_resource type="Texture2D" uid="uid://a3" path="res://assets/frames/attack/frame_3.png" id="16_a3"]
+[ext_resource type="Texture2D" uid="uid://a4" path="res://assets/frames/attack/frame_4.png" id="17_a4"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_walk1")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_walk1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_walk2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_walk3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_walk4")
+}],
+"loop": true,
+"name": &"walk",
+"speed": 8.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("5_run0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_run1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_run2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_run3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_run4")
+}],
+"loop": true,
+"name": &"run",
+"speed": 11.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("10_j0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_j1")
+}],
+"loop": false,
+"name": &"jump",
+"speed": 6.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("12_j2")
+}],
+"loop": true,
+"name": &"fall",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("11_j1")
+}],
+"loop": true,
+"name": &"glide",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("13_a0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_a1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_a2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("16_a3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_a4")
+}],
+"loop": false,
+"name": &"attack",
+"speed": 12.0
+}]

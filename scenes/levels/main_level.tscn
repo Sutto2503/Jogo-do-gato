@@ -1,0 +1,167 @@
+[gd_scene load_steps=18 format=3 uid="uid://cmainlevel101"]
+
+[ext_resource type="Script" path="res://scenes/levels/main_level.gd" id="1_lvlscript"]
+[ext_resource type="PackedScene" uid="uid://b7vplayer678" path="res://scenes/player/player.tscn" id="2_playerscn"]
+[ext_resource type="PackedScene" uid="uid://cgrapplept123" path="res://scenes/environment/grapple_point.tscn" id="3_grapplept"]
+[ext_resource type="PackedScene" uid="uid://cfloatisland789" path="res://scenes/environment/floating_island.tscn" id="4_floatisl"]
+[ext_resource type="PackedScene" uid="uid://cwindcurrent456" path="res://scenes/environment/wind_current.tscn" id="5_wind"]
+[ext_resource type="Texture2D" uid="uid://envref" path="res://assets/environment/level_reference.png" id="6_bgref"]
+[ext_resource type="Texture2D" uid="uid://pagtwr" path="res://assets/environment/pagoda_tower.png" id="7_pagoda"]
+[ext_resource type="Texture2D" uid="uid://hshrine" path="res://assets/environment/house_shrine.png" id="8_shrine"]
+[ext_resource type="Texture2D" uid="uid://hsmall" path="res://assets/environment/house_small.png" id="9_hsmall"]
+[ext_resource type="Texture2D" uid="uid://mstall" path="res://assets/environment/market_stall.png" id="10_mstall"]
+[ext_resource type="Texture2D" uid="uid://mcliff" path="res://assets/environment/mystic_cliff_mountain.png" id="11_mcliff"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ground_city"]
+size = Vector2(480, 80)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ground_nature"]
+size = Vector2(500, 80)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_bridge_l"]
+size = Vector2(60, 30)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_bridge_r"]
+size = Vector2(60, 30)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_cliff_top"]
+size = Vector2(240, 40)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_cave_ledge"]
+size = Vector2(70, 16)
+
+[node name="MainLevel" type="Node2D"]
+script = ExtResource("1_lvlscript")
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+
+[node name="SkyLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_scale = Vector2(0.1, 0.1)
+
+[node name="ColorRect" type="ColorRect" parent="ParallaxBackground/SkyLayer"]
+offset_left = -1000.0
+offset_top = -600.0
+offset_right = 3000.0
+offset_bottom = 1200.0
+color = Color(0.08, 0.12, 0.18, 1)
+
+[node name="LevelVisualReference" type="Sprite2D" parent="."]
+modulate = Color(1, 1, 1, 0.35)
+position = Vector2(512, 276)
+texture = ExtResource("6_bgref")
+
+[node name="CityObjects" type="Node2D" parent="."]
+
+[node name="HouseShrine" type="Sprite2D" parent="CityObjects"]
+position = Vector2(65, 395)
+texture = ExtResource("8_shrine")
+
+[node name="HouseSmall" type="Sprite2D" parent="CityObjects"]
+position = Vector2(138, 410)
+texture = ExtResource("9_hsmall")
+
+[node name="MarketStall" type="Sprite2D" parent="CityObjects"]
+position = Vector2(222, 415)
+texture = ExtResource("10_mstall")
+
+[node name="PagodaTower" type="Sprite2D" parent="CityObjects"]
+position = Vector2(330, 300)
+texture = ExtResource("7_pagoda")
+
+[node name="GrapplePoint_PagodaRoof" parent="CityObjects" instance=ExtResource("3_grapplept")]
+position = Vector2(330, 160)
+
+[node name="GrapplePoint_CityLantern" parent="CityObjects" instance=ExtResource("3_grapplept")]
+position = Vector2(180, 330)
+
+[node name="NatureAndCliffs" type="Node2D" parent="."]
+
+[node name="MysticCliff" type="Sprite2D" parent="NatureAndCliffs"]
+position = Vector2(882, 240)
+texture = ExtResource("11_mcliff")
+
+[node name="GrapplePoint_Stone1" parent="NatureAndCliffs" instance=ExtResource("3_grapplept")]
+position = Vector2(670, 240)
+
+[node name="GrapplePoint_Stone2" parent="NatureAndCliffs" instance=ExtResource("3_grapplept")]
+position = Vector2(720, 202)
+
+[node name="GrapplePoint_Stone3" parent="NatureAndCliffs" instance=ExtResource("3_grapplept")]
+position = Vector2(720, 280)
+
+[node name="FloatingIsland_1" parent="NatureAndCliffs" instance=ExtResource("4_floatisl")]
+position = Vector2(670, 225)
+
+[node name="FloatingIsland_2" parent="NatureAndCliffs" instance=ExtResource("4_floatisl")]
+position = Vector2(720, 185)
+
+[node name="FloatingIsland_3" parent="NatureAndCliffs" instance=ExtResource("4_floatisl")]
+position = Vector2(915, 320)
+
+[node name="ChasmAndRiver" type="Node2D" parent="."]
+
+[node name="WindCurrent_Chasm" parent="ChasmAndRiver" instance=ExtResource("5_wind")]
+position = Vector2(560, 350)
+
+[node name="StaticColliders" type="Node2D" parent="."]
+
+[node name="CityGround" type="StaticBody2D" parent="StaticColliders"]
+position = Vector2(240, 480)
+collision_layer = 1
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticColliders/CityGround"]
+shape = SubResource("RectangleShape2D_ground_city")
+
+[node name="NatureGround" type="StaticBody2D" parent="StaticColliders"]
+position = Vector2(820, 480)
+collision_layer = 1
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticColliders/NatureGround"]
+shape = SubResource("RectangleShape2D_ground_nature")
+
+[node name="BridgeStone_Left" type="StaticBody2D" parent="StaticColliders"]
+position = Vector2(520, 430)
+collision_layer = 1
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticColliders/BridgeStone_Left"]
+shape = SubResource("RectangleShape2D_bridge_l")
+
+[node name="BridgeStone_Right" type="StaticBody2D" parent="StaticColliders"]
+position = Vector2(600, 430)
+collision_layer = 1
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticColliders/BridgeStone_Right"]
+shape = SubResource("RectangleShape2D_bridge_r")
+
+[node name="CliffTopPlateau" type="StaticBody2D" parent="StaticColliders"]
+position = Vector2(880, 50)
+collision_layer = 1
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticColliders/CliffTopPlateau"]
+shape = SubResource("RectangleShape2D_cliff_top")
+
+[node name="CaveLedge_Upper" type="StaticBody2D" parent="StaticColliders"]
+position = Vector2(945, 285)
+collision_layer = 1
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticColliders/CaveLedge_Upper"]
+shape = SubResource("RectangleShape2D_cave_ledge")
+one_way_collision = true
+
+[node name="CaveLedge_Lower" type="StaticBody2D" parent="StaticColliders"]
+position = Vector2(945, 350)
+collision_layer = 1
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticColliders/CaveLedge_Lower"]
+shape = SubResource("RectangleShape2D_cave_ledge")
+one_way_collision = true
+
+[node name="Player" parent="." instance=ExtResource("2_playerscn")]
+position = Vector2(100, 430)
