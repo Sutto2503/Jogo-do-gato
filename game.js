@@ -1,6 +1,6 @@
 // ==============================================================================
-// GATINHO SAMURAI: ECOS MÍSTICOS - MOTOR METROIDVANIA EXPANDIDO
-// Inspirado em Hollow Knight, Ori and the Will of the Wisps e Nine Sols
+// GATINHO SAMURAI: ECOS MÍSTICOS - MOTOR METROIDVANIA EXPANDIDO V4
+// Física Fluida estilo Ori, Gancho Auto-Targeting, Colisão e Game Feel Avançado
 // ==============================================================================
 
 // --- 1. SISTEMA DE ÁUDIO SINTETIZADO & MÚSICA AMBIENTE DINÂMICA ---
@@ -122,6 +122,40 @@ class SoundSystem {
     gain.connect(this.ctx.destination);
     osc.start(now);
     osc.stop(now + 0.23);
+  }
+
+  playGrapple() {
+    if (!this.enabled || this.sfxVolume <= 0) return;
+    this.init();
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(450, now);
+    osc.frequency.exponentialRampToValueAtTime(980, now + 0.16);
+    gain.gain.setValueAtTime(0.28 * this.sfxVolume, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.19);
+  }
+
+  playGrappleLaunch() {
+    if (!this.enabled || this.sfxVolume <= 0) return;
+    this.init();
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(340, now);
+    osc.frequency.exponentialRampToValueAtTime(1420, now + 0.24);
+    gain.gain.setValueAtTime(0.38 * this.sfxVolume, now);
+    gain.gain.exponentialRampToValueAtTime(0.005, now + 0.25);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.26);
   }
 
   playPogo() {
@@ -330,12 +364,13 @@ const saveManager = new SaveManager();
 // --- 3. CARREGADOR DE ASSETS BASE64 ---
 const frameImages = {};
 const envImages = {};
+const npcImages = {};
 let assetsReady = false;
 
 function initAssets(callback) {
   if (typeof ASSETS_BUNDLE !== 'undefined') {
     Object.keys(ASSETS_BUNDLE).forEach(key => {
-      if (key !== 'environment') {
+      if (key !== 'environment' && key !== 'npcs') {
         frameImages[key] = [];
         ASSETS_BUNDLE[key].forEach(src => {
           const img = new Image();
@@ -352,6 +387,15 @@ function initAssets(callback) {
         envImages[key] = img;
       });
     }
+
+    if (ASSETS_BUNDLE.npcs) {
+      Object.keys(ASSETS_BUNDLE.npcs).forEach(key => {
+        const img = new Image();
+        img.src = ASSETS_BUNDLE.npcs[key];
+        npcImages[key] = img;
+      });
+    }
+
     assetsReady = true;
     callback();
   } else {
@@ -553,18 +597,25 @@ class MetroidvaniaWorldGame {
     this.worldWidth = 3840;
     this.worldHeight = 2145;
 
-    // Jogador (5 Máscaras Base = 100 HP, cada máscara = 20 HP)
+    // Jogador Recalibrado para Física Fluida Estilo Ori
     this.player = {
       x: 350,
       y: 1580,
       vx: 0,
       vy: 0,
-      speed: 7.5,
-      sprintSpeed: 11.5,
-      jumpForce: -17.5,
-      doubleJumpForce: -16.0,
-      glideGravity: 0.18,
-      gravity: 0.85,
+      speed: 5.5,             // Velocidade base de caminhada
+      sprintSpeed: 8.5,       // Velocidade de corrida suave
+      accel: 0.65,            // Aceleração no chão
+      friction: 0.55,         // Atrito/desaceleração no chão
+      airAccel: 0.42,         // Controle aéreo suave
+      airDrag: 0.95,          // Arrasto no ar
+      jumpForce: -14.0,       // Impulso do pulo base
+      doubleJumpForce: -13.5, // Pulo duplo
+      gravity: 0.65,          // Gravidade estável
+      maxFallSpeed: 14.0,     // Velocidade terminal de queda
+      glideGravity: 0.09,     // Gravidade ultra-suave com planador
+      maxGlideFallSpeed: 2.0, // Queda suave no planador
+      glideSteerSpeed: 6.5,   // Deslocamento horizontal do planador
       isGrounded: true,
       canDoubleJump: true,
       isGliding: false,
@@ -577,13 +628,26 @@ class MetroidvaniaWorldGame {
       isAttacking: false,
       attackTimer: 0,
       isDownslashing: false,
+      // Squash and stretch
+      scaleX: 1.0,
+      scaleY: 1.0,
+      // Coyote time e Jump buffer
+      coyoteTimer: 0,         // 0.12s coyote time
+      jumpBufferTimer: 0,     // 0.10s jump buffer
+      dropThroughTimer: 0,    // Drop through one-way platforms (S + Space)
+      // Gancho de Escalada (Grappling Hook)
+      isGrappling: false,
+      grappleTarget: null,
+      grappleTargetPos: { x: 0, y: 0 },
+      grapplePullSpeed: 18.5,
+      // Vida & Energia (Hollow Knight Masks)
       health: 100,
-      maxHealth: 100, // Pode aumentar para 120 (+1 Máscara)
+      maxHealth: 100,
       energy: 100,
       maxEnergy: 100,
       scrollsCollected: [],
       keystonesCollected: 0,
-      equippedAmulets: ['storm_claw'], // Max 2 slots
+      equippedAmulets: ['storm_claw'],
       unlockedAmulets: ['storm_claw', 'lotus_wings', 'spirit_eye'],
       questsCompleted: [],
       checkpointName: 'Vila dos Samurais',
@@ -594,37 +658,60 @@ class MetroidvaniaWorldGame {
 
     this.cameraX = 0;
     this.cameraY = 0;
+    this.screenShake = 0;
+    this.screenShakeTimer = 0;
     this.keys = {};
     this.isPaused = false;
-    this.currentDialogueNPC = null;
-    this.activeInteractTarget = null;
+    this.activeGrappleTarget = null;
 
-    // Plataformas dos 4 Setores
+    // Plataformas dos 4 Setores (Boxes com One-Way e Ponte Ajustada)
     this.platforms = [
       // SETOR 1: Vila & Pagoda (Oeste)
-      { x: 0, y: 1680, w: 1800, h: 200, type: 'village_ground' },
-      { x: 100, y: 1530, w: 180, h: 24, type: 'house_roof' },
-      { x: 550, y: 1450, w: 220, h: 24, type: 'pagoda_roof_1' },
-      { x: 580, y: 1220, w: 180, h: 24, type: 'pagoda_roof_2' },
-      { x: 620, y: 980, w: 140, h: 24, type: 'pagoda_roof_3' },
+      { x: 0, y: 1680, w: 1750, h: 200, type: 'village_ground', solid: true },
+      // Telhado das casas (One-way)
+      { x: 80, y: 1530, w: 220, h: 20, type: 'house_roof', oneWay: true },
+      // Telhados da Pagoda de 3 Andares (One-way - drop com S+Space)
+      { x: 520, y: 1430, w: 280, h: 20, type: 'pagoda_roof_1', oneWay: true },
+      { x: 550, y: 1180, w: 240, h: 20, type: 'pagoda_roof_2', oneWay: true },
+      { x: 600, y: 920,  w: 180, h: 20, type: 'pagoda_roof_3', oneWay: true },
 
-      // SETOR 2: Ponte de Pedra & Rio Sagrado (Centro)
-      { x: 1800, y: 1550, w: 750, h: 50, type: 'stone_bridge' },
+      // SETOR 2: Ponte de Pedra & Rio Sagrado (Centro) - Colisão Sólida Exata x in [1750, 2520], y ~ 1535
+      { x: 1750, y: 1535, w: 770, h: 45, type: 'stone_bridge', solid: true },
 
       // SETOR 3: Penhascos & Natureza Selvagem (Leste)
-      { x: 2550, y: 1680, w: 1300, h: 200, type: 'wild_ground' },
-      { x: 3050, y: 1050, w: 500, h: 40, type: 'cliff_overhang' },
-      { x: 2480, y: 880, w: 120, h: 35, type: 'floating_stone', baseY: 880, phase: 0 },
-      { x: 2650, y: 660, w: 120, h: 35, type: 'floating_stone', baseY: 660, phase: 1.8 },
-      { x: 2750, y: 440, w: 120, h: 35, type: 'floating_stone', baseY: 440, phase: 3.2 },
+      { x: 2520, y: 1680, w: 1330, h: 200, type: 'wild_ground', solid: true },
+      { x: 3050, y: 1050, w: 500, h: 30, type: 'cliff_overhang', oneWay: true },
+      { x: 2480, y: 880,  w: 120, h: 25, type: 'floating_stone', baseY: 880, phase: 0, oneWay: true },
+      { x: 2650, y: 660,  w: 120, h: 25, type: 'floating_stone', baseY: 660, phase: 1.8, oneWay: true },
+      { x: 2750, y: 440,  w: 120, h: 25, type: 'floating_stone', baseY: 440, phase: 3.2, oneWay: true },
 
       // SETOR 4: Ruínas Subterrâneas & Tubulações (Sul)
-      { x: 0, y: 2100, w: 3840, h: 100, type: 'subterranean_floor' },
-      { x: 1900, y: 1850, w: 400, h: 30, type: 'sub_pipe' },
-      { x: 2800, y: 1920, w: 350, h: 30, type: 'sub_pipe' }
+      { x: 0, y: 2100, w: 3840, h: 100, type: 'subterranean_floor', solid: true },
+      { x: 1900, y: 1850, w: 400, h: 30, type: 'sub_pipe', oneWay: true },
+      { x: 2800, y: 1920, w: 350, h: 30, type: 'sub_pipe', oneWay: true }
     ];
 
-    // 🪷 Plataformas Efêmeras de Lótus (Ori Style - 1.5s timer)
+    // Âncoras do Gancho de Escalada (Grappling Anchors com Retículo)
+    this.grappleAnchors = [
+      // Lanternas da Pagoda e Vila
+      { id: 'g_lantern_1', x: 190, y: 1470, type: 'lantern', name: 'Lanterna da Casa' },
+      { id: 'g_lantern_2', x: 660, y: 1370, type: 'lantern', name: 'Lanterna Pagoda Nível 1' },
+      { id: 'g_lantern_3', x: 670, y: 1140, type: 'lantern', name: 'Lanterna Pagoda Nível 2' },
+      { id: 'g_lantern_4', x: 690, y: 880,  type: 'lantern', name: 'Lanterna Pagoda Cume' },
+      // Anéis de Pedra da Ponte
+      { id: 'g_bridge_1',  x: 1950, y: 1470, type: 'ring', name: 'Anel do Arco Ocidental' },
+      { id: 'g_bridge_2',  x: 2320, y: 1470, type: 'ring', name: 'Anel do Arco Oriental' },
+      // Penhasco e Caverna
+      { id: 'g_cliff_1',   x: 3050, y: 980,  type: 'overhang', name: 'Saliente do Penhasco' },
+      { id: 'g_cave_1',    x: 2150, y: 1800, type: 'cavern', name: 'Estalactite Rúnica' },
+      { id: 'g_cave_2',    x: 2600, y: 1860, type: 'cavern', name: 'Gancho Subterrâneo' },
+      // Pedras Flutuantes
+      { id: 'g_stone_1',   x: 2540, y: 860,  type: 'floating_stone', baseY: 860, phase: 0 },
+      { id: 'g_stone_2',   x: 2710, y: 640,  type: 'floating_stone', baseY: 640, phase: 1.8 },
+      { id: 'g_stone_3',   x: 2810, y: 420,  type: 'floating_stone', baseY: 420, phase: 3.2 }
+    ];
+
+    // 🪷 Plataformas Efêmeras de Lótus (Ori Style)
     this.lotusPlatforms = [
       { x: 1950, y: 1480, w: 85, h: 20, timer: 0, fading: false, respawnTimer: 0, active: true },
       { x: 2120, y: 1400, w: 85, h: 20, timer: 0, fading: false, respawnTimer: 0, active: true },
@@ -643,11 +730,11 @@ class MetroidvaniaWorldGame {
 
     // 🔑 Chaves de Espírito (Keystones)
     this.keystones = [
-      { id: 1, x: 670, y: 940, collected: false },
+      { id: 1, x: 670, y: 880, collected: false },
       { id: 2, x: 2100, y: 1720, collected: false }
     ];
 
-    // 🐱 NPCs com Diálogos e Quests
+    // 🐱 NPCs com Sprites, Respiração Ociosa e Missões
     this.npcs = [
       {
         id: 'elder_jin',
@@ -655,7 +742,8 @@ class MetroidvaniaWorldGame {
         portrait: '🐱',
         x: 420,
         y: 1570,
-        pitch: 0.8,
+        pitch: 0.85,
+        theme: '#fbbf24',
         initialText: 'Os espíritos do vale estão inquietos. Traga-me as 2 Chaves de Espírito escondidas nos telhados e no rio para abrir o grande portão.',
         completedText: 'Você provou sua disciplina! Tome este Fragmento de Máscara Sagrada. Sua vida máxima foi expandida!'
       },
@@ -665,7 +753,8 @@ class MetroidvaniaWorldGame {
         portrait: '😼',
         x: 920,
         y: 1570,
-        pitch: 1.2,
+        pitch: 1.25,
+        theme: '#f97316',
         initialText: 'Espadas afiadas cortam bambu, mas amuletos dobram as leis espirituais. Pressione TAB para forjar e equipar seus talismãs!',
         completedText: 'Sinta a ressonância do chakra em seu quimono... Use seus amuletos com sabedoria.'
       },
@@ -675,33 +764,34 @@ class MetroidvaniaWorldGame {
         portrait: '😾',
         x: 2380,
         y: 1980,
-        pitch: 1.0,
+        pitch: 1.05,
+        theme: '#38bdf8',
         initialText: 'Pelas nove vidas! Você quebrou a parede! Tome este Amuleto do Passo Fantasma como agradecimento!',
         completedText: 'Com o Passo Fantasma, use Shift para atravessar perigos como uma sombra.'
       }
     ];
 
-    // Paredes de Escalada
+    // Paredes de Escalada (Wall Cling)
     this.wallCliffs = [
       { x: 2950, y: 200, w: 60, h: 1450, side: -1 }
     ];
 
-    // Espíritos Luminosos (Wisps)
+    // Espíritos Luminosos (Wisps - Bash / Grapple Targets)
     this.spiritWisps = [
-      { x: 2540, y: 780, color: '#fbbf24', auraRadius: 28, type: 'gold' },
-      { x: 2710, y: 560, color: '#38bdf8', auraRadius: 28, type: 'blue' },
-      { x: 2820, y: 340, color: '#fbbf24', auraRadius: 28, type: 'gold' }
+      { id: 'wisp_1', x: 2540, y: 780, color: '#fbbf24', auraRadius: 28, type: 'gold' },
+      { id: 'wisp_2', x: 2710, y: 560, color: '#38bdf8', auraRadius: 28, type: 'blue' },
+      { id: 'wisp_3', x: 2820, y: 340, color: '#fbbf24', auraRadius: 28, type: 'gold' }
     ];
 
     // Cogumelos Bioluminescentes (Pogo)
     this.pogoMushrooms = [
-      { x: 2880, y: 1655, w: 60, h: 30, color: '#22c55e', bounceForce: -21.0 },
-      { x: 3380, y: 1655, w: 60, h: 30, color: '#06b6d4', bounceForce: -22.0 },
-      { x: 2200, y: 1830, w: 55, h: 25, color: '#a855f7', bounceForce: -20.0 }
+      { x: 2880, y: 1655, w: 60, h: 30, color: '#22c55e', bounceForce: -18.0 },
+      { x: 3380, y: 1655, w: 60, h: 30, color: '#06b6d4', bounceForce: -19.0 },
+      { x: 2200, y: 1830, w: 55, h: 25, color: '#a855f7', bounceForce: -17.5 }
     ];
 
-    // Corrente de Vento
-    this.windChasm = { x: 2000, y: 600, w: 350, h: 1200, lift: -11.5 };
+    // Corrente de Vento Ascendente
+    this.windChasm = { x: 2000, y: 600, w: 350, h: 1200, lift: -9.5 };
 
     // Santuários
     this.meditationShrines = [
@@ -711,12 +801,12 @@ class MetroidvaniaWorldGame {
 
     // Pergaminhos
     this.scrolls = [
-      { id: 1, x: 690, y: 920, collected: false, name: 'Pergaminho 1' },
+      { id: 1, x: 690, y: 860, collected: false, name: 'Pergaminho 1' },
       { id: 2, x: 2810, y: 380, collected: false, name: 'Pergaminho 2' },
       { id: 3, x: 2400, y: 2040, collected: false, name: 'Pergaminho 3' }
     ];
 
-    // Efeitos
+    // Efeitos e Partículas
     this.particles = [];
     this.sakuraPetals = [];
     this.slashes = [];
@@ -730,8 +820,13 @@ class MetroidvaniaWorldGame {
     this.viewHeight = this.canvas.height = window.innerHeight;
   }
 
+  addScreenShake(intensity = 6.0, durationSec = 0.15) {
+    this.screenShake = Math.max(this.screenShake, intensity);
+    this.screenShakeTimer = Math.max(this.screenShakeTimer, durationSec);
+  }
+
   initSakura() {
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 65; i++) {
       this.sakuraPetals.push({
         x: Math.random() * this.worldWidth,
         y: Math.random() * this.worldHeight,
@@ -740,7 +835,7 @@ class MetroidvaniaWorldGame {
         speedY: 1.2 + Math.random() * 1.8,
         angle: Math.random() * Math.PI * 2,
         rotSpeed: 0.02 + Math.random() * 0.03,
-        color: Math.random() > 0.35 ? 'rgba(255, 182, 193, 0.8)' : 'rgba(251, 191, 36, 0.7)'
+        color: Math.random() > 0.35 ? 'rgba(255, 182, 193, 0.85)' : 'rgba(251, 191, 36, 0.75)'
       });
     }
   }
@@ -748,25 +843,45 @@ class MetroidvaniaWorldGame {
   setupControls() {
     window.addEventListener('keydown', (e) => {
       this.keys[e.code] = true;
+
+      // Pulo e Descida de Telhado (S + Espaço)
       if (['Space', 'KeyW', 'ArrowUp'].includes(e.code)) {
-        this.handleJumpPress();
+        const isDown = this.keys['KeyS'] || this.keys['ArrowDown'];
+        if (isDown && this.player.isGrounded) {
+          this.tryDropThroughPlatform();
+        } else {
+          this.player.jumpBufferTimer = 0.10; // Jump buffer
+          this.handleJumpPress();
+        }
       }
-      if (['KeyQ', 'KeyK'].includes(e.code)) {
-        this.trySpiritBash();
+
+      // Gancho de Escalada / Bash: K, F, Q
+      if (['KeyK', 'KeyF', 'KeyQ'].includes(e.code)) {
+        this.tryGrapplingHook();
       }
+
+      // Ataque: J, Z, X
       if (['KeyJ', 'KeyZ', 'KeyX'].includes(e.code)) {
         this.triggerAttack();
       }
+
+      // Interação: E
       if (e.code === 'KeyE') {
         this.tryInteract();
       }
+
+      // Esquiva / Dash: Shift
       if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
         this.tryDash();
       }
+
+      // Menu de Amuletos: Tab
       if (e.code === 'Tab') {
         e.preventDefault();
         this.toggleAmuletsModal();
       }
+
+      // Pausa: Escape
       if (e.code === 'Escape') {
         this.togglePause();
       }
@@ -774,18 +889,26 @@ class MetroidvaniaWorldGame {
 
     window.addEventListener('keyup', (e) => {
       this.keys[e.code] = false;
-      if (['Space', 'KeyW', 'ArrowUp', 'KeyS'].includes(e.code)) {
+
+      // Variable Jump Height: Corta a altura do pulo ao soltar a tecla
+      if (['Space', 'KeyW', 'ArrowUp'].includes(e.code)) {
+        if (this.player.vy < -3.0) {
+          this.player.vy = Math.max(this.player.vy * 0.52, -3.0);
+        }
         if (this.player.isGliding) this.player.isGliding = false;
       }
     });
 
+    // Controles de Mouse
     this.canvas.addEventListener('mousedown', (e) => {
-      if (e.button === 0) this.triggerAttack();
-      else if (e.button === 2) {
+      if (e.button === 0) {
+        this.triggerAttack();
+      } else if (e.button === 2) {
         e.preventDefault();
-        this.trySpiritBash();
+        this.tryGrapplingHook();
       }
     });
+
     this.canvas.addEventListener('contextmenu', e => e.preventDefault());
   }
 
@@ -808,7 +931,6 @@ class MetroidvaniaWorldGame {
 
   updateAmuletsUI() {
     const p = this.player;
-    // Slots ativos
     const slot0 = document.getElementById('notch-0');
     const slot1 = document.getElementById('notch-1');
     const iconMap = { storm_claw: '🗡️', lotus_wings: '🌸', spirit_eye: '👁️', shadow_dash: '💨' };
@@ -845,7 +967,7 @@ class MetroidvaniaWorldGame {
       p.equippedAmulets = p.equippedAmulets.filter(id => id !== amuletId);
     } else {
       if (p.equippedAmulets.length >= 2) {
-        p.equippedAmulets.shift(); // Remove o mais antigo se já tiver 2
+        p.equippedAmulets.shift();
       }
       p.equippedAmulets.push(amuletId);
     }
@@ -860,12 +982,15 @@ class MetroidvaniaWorldGame {
 
     p.isDashing = true;
     p.dashTimer = 14;
-    p.dashCooldown = 40;
-    p.vx = p.facing * 24.0;
+    p.dashCooldown = 36;
+    p.vx = p.facing * 18.0;
     p.vy = 0;
+    p.scaleX = 1.35;
+    p.scaleY = 0.75;
+    this.addScreenShake(3.5, 0.1);
     sfx.playDash();
 
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 14; i++) {
       this.particles.push({
         x: p.x + 35,
         y: p.y + 60,
@@ -879,29 +1004,53 @@ class MetroidvaniaWorldGame {
     }
   }
 
+  tryDropThroughPlatform() {
+    const p = this.player;
+    p.dropThroughTimer = 0.22;
+    p.isGrounded = false;
+    p.y += 4;
+    p.vy = 3.5;
+    this.spawnDust(p.x + 35, p.y + 80, 5, 'rgba(148, 163, 184, 0.6)');
+  }
+
   handleJumpPress() {
     const p = this.player;
     const hasLotus = p.equippedAmulets.includes('lotus_wings');
     const jumpBoost = hasLotus ? 1.08 : 1.0;
 
-    if (p.isGrounded) {
+    // Se estiver em estado de Grapple, solta com impulso vertical
+    if (p.isGrappling) {
+      this.releaseGrappleLaunch();
+      return;
+    }
+
+    // Pulo no chão ou Coyote Time
+    if (p.isGrounded || p.coyoteTimer > 0) {
       p.vy = p.jumpForce * jumpBoost;
       p.isGrounded = false;
+      p.coyoteTimer = 0;
       p.canDoubleJump = true;
-      this.spawnDust(p.x + 35, p.y + 110, 10);
+      p.jumpBufferTimer = 0;
+      p.scaleX = 0.80;
+      p.scaleY = 1.28;
+      this.spawnDust(p.x + 35, p.y + 110, 8);
       sfx.playJump(false);
     } else if (p.isWallSliding) {
       p.vy = p.jumpForce * 0.95;
-      p.vx = -p.wallDir * (p.sprintSpeed * 1.1);
+      p.vx = -p.wallDir * (p.sprintSpeed * 1.15);
       p.facing = -p.wallDir;
       p.isWallSliding = false;
       p.canDoubleJump = true;
-      this.spawnDust(p.x + 35, p.y + 70, 12, '#38bdf8');
+      p.scaleX = 0.85;
+      p.scaleY = 1.25;
+      this.spawnDust(p.x + 35, p.y + 70, 10, '#38bdf8');
       sfx.playJump(true);
     } else if (p.canDoubleJump) {
       p.vy = p.doubleJumpForce * jumpBoost;
       p.canDoubleJump = false;
-      this.spawnDust(p.x + 35, p.y + 80, 14, '#fbbf24');
+      p.scaleX = 0.80;
+      p.scaleY = 1.30;
+      this.spawnDust(p.x + 35, p.y + 80, 12, '#fbbf24');
       sfx.playJump(true);
     } else if (p.vy > 0) {
       p.isGliding = !p.isGliding;
@@ -909,38 +1058,127 @@ class MetroidvaniaWorldGame {
     }
   }
 
-  trySpiritBash() {
+  // Auto-targeting: Procura o melhor ponto de ancoragem para o Gancho
+  findBestGrappleTarget() {
     const p = this.player;
-    let closestWisp = null;
-    let minDist = 180;
+    const px = p.x + 35;
+    const py = p.y + 50;
+    const maxRange = 420;
 
-    for (const wisp of this.spiritWisps) {
-      const dist = Math.hypot(wisp.x - (p.x + 35), wisp.y - (p.y + 60));
-      if (dist < minDist) {
-        minDist = dist;
-        closestWisp = wisp;
+    let bestTarget = null;
+    let minScore = Infinity;
+
+    // 1. Procurar nas âncoras dedicadas do cenário
+    const time = Date.now() * 0.002;
+    for (const anchor of this.grappleAnchors) {
+      let ax = anchor.x;
+      let ay = anchor.y;
+      if (anchor.type === 'floating_stone') {
+        ay = anchor.baseY + Math.sin(time + anchor.phase) * 16;
+      }
+
+      const dx = ax - px;
+      const dy = ay - py;
+      const dist = Math.hypot(dx, dy);
+
+      if (dist <= maxRange) {
+        // Priorizar pontos à frente e acima do personagem
+        const dirX = dx / dist;
+        const dirY = dy / dist;
+        const forwardScore = dirX * p.facing; // 1 = frente, -1 = costas
+        const upwardScore = -dirY;            // 1 = acima, -1 = abaixo
+
+        // Penalizar alvos atrás ou muito abaixo
+        if (forwardScore > -0.3 && upwardScore > -0.4) {
+          const score = dist - forwardScore * 80 - upwardScore * 60;
+          if (score < minScore) {
+            minScore = score;
+            bestTarget = { ...anchor, currentX: ax, currentY: ay };
+          }
+        }
       }
     }
 
-    if (closestWisp) {
-      p.vx = p.facing * 18.0;
-      p.vy = -18.0;
+    // 2. Wisps também servem de âncoras/Bash
+    const wispTime = Date.now() * 0.003;
+    for (const wisp of this.spiritWisps) {
+      const curX = wisp.x + Math.sin(wispTime) * 12;
+      const curY = wisp.y + Math.sin(wispTime * 2) * 8;
+      const dx = curX - px;
+      const dy = curY - py;
+      const dist = Math.hypot(dx, dy);
+
+      if (dist <= maxRange) {
+        const dirX = dx / dist;
+        const forwardScore = dirX * p.facing;
+        const score = dist - forwardScore * 70;
+        if (score < minScore) {
+          minScore = score;
+          bestTarget = { id: wisp.id, type: 'wisp', color: wisp.color, currentX: curX, currentY: curY };
+        }
+      }
+    }
+
+    return bestTarget;
+  }
+
+  tryGrapplingHook() {
+    const p = this.player;
+    const target = this.findBestGrappleTarget();
+
+    if (target) {
+      p.isGrappling = true;
+      p.grappleTarget = target;
+      p.grappleTargetPos = { x: target.currentX, y: target.currentY };
       p.canDoubleJump = true;
       p.isGliding = false;
-      sfx.playBash();
+      p.scaleX = 0.85;
+      p.scaleY = 1.25;
 
-      for (let i = 0; i < 20; i++) {
+      this.addScreenShake(3.0, 0.08);
+      sfx.playGrapple();
+
+      // Partículas no ponto de conexão
+      for (let i = 0; i < 12; i++) {
         this.particles.push({
-          x: closestWisp.x,
-          y: closestWisp.y,
-          vx: (Math.random() - 0.5) * 8,
-          vy: (Math.random() - 0.5) * 8,
-          life: 25,
-          maxLife: 25,
-          color: closestWisp.color,
+          x: target.currentX,
+          y: target.currentY,
+          vx: (Math.random() - 0.5) * 6,
+          vy: (Math.random() - 0.5) * 6,
+          life: 18,
+          maxLife: 18,
+          color: target.color || '#38bdf8',
           size: 4
         });
       }
+    }
+  }
+
+  releaseGrappleLaunch() {
+    const p = this.player;
+    p.isGrappling = false;
+
+    // Lançamento com impulso para cima e na direção
+    p.vy = -14.8;
+    p.vx = p.facing * (p.sprintSpeed * 1.25);
+    p.canDoubleJump = true;
+    p.scaleX = 0.78;
+    p.scaleY = 1.32;
+
+    this.addScreenShake(4.5, 0.12);
+    sfx.playGrappleLaunch();
+
+    for (let i = 0; i < 16; i++) {
+      this.particles.push({
+        x: p.x + 35,
+        y: p.y + 60,
+        vx: (Math.random() - 0.5) * 8,
+        vy: (Math.random() - 0.5) * 8 - 3,
+        life: 20,
+        maxLife: 20,
+        color: '#38bdf8',
+        size: 5
+      });
     }
   }
 
@@ -956,7 +1194,7 @@ class MetroidvaniaWorldGame {
       p.isDownslashing = !p.isGrounded && isDown;
 
       const hasStormClaw = p.equippedAmulets.includes('storm_claw');
-      const reachMultiplier = hasStormClaw ? 1.4 : 1.0;
+      const reachMultiplier = hasStormClaw ? 1.45 : 1.0;
 
       sfx.playSlash();
 
@@ -976,14 +1214,15 @@ class MetroidvaniaWorldGame {
           const slashBox = {
             x: p.facing === 1 ? p.x + 30 : p.x - 60 * reachMultiplier,
             y: p.y,
-            w: 80 * reachMultiplier,
+            w: 85 * reachMultiplier,
             h: 120
           };
           if (slashBox.x < wall.x + wall.w && slashBox.x + slashBox.w > wall.x &&
               slashBox.y < wall.y + wall.h && slashBox.y + slashBox.h > wall.y) {
             wall.hits++;
+            this.addScreenShake(6.0, 0.15);
             sfx.playBreak();
-            for (let i = 0; i < 15; i++) {
+            for (let i = 0; i < 18; i++) {
               this.particles.push({
                 x: wall.x + wall.w / 2,
                 y: wall.y + Math.random() * wall.h,
@@ -997,13 +1236,14 @@ class MetroidvaniaWorldGame {
             }
             if (wall.hits >= wall.maxHits) {
               wall.destroyed = true;
+              this.addScreenShake(12.0, 0.28);
               this.showToast('PAREDE DESTRUÍDA!');
             }
           }
         }
       }
 
-      // Checar Pogo
+      // Checar Pogo em Cogumelos
       if (p.isDownslashing) {
         for (const mush of this.pogoMushrooms) {
           if (p.x + 35 >= mush.x && p.x + 35 <= mush.x + mush.w &&
@@ -1011,8 +1251,11 @@ class MetroidvaniaWorldGame {
             p.vy = mush.bounceForce;
             p.canDoubleJump = true;
             p.isGliding = false;
+            p.scaleX = 0.75;
+            p.scaleY = 1.35;
+            this.addScreenShake(4.0, 0.10);
             sfx.playPogo();
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 12; i++) {
               this.particles.push({
                 x: mush.x + mush.w / 2,
                 y: mush.y,
@@ -1034,7 +1277,6 @@ class MetroidvaniaWorldGame {
   tryInteract() {
     const p = this.player;
 
-    // Se já estiver conversando, fecha o diálogo
     const dialogueBox = document.getElementById('dialogue-box');
     if (dialogueBox && dialogueBox.classList.contains('active')) {
       dialogueBox.classList.remove('active');
@@ -1043,7 +1285,7 @@ class MetroidvaniaWorldGame {
 
     // 1. Interagir com NPCs
     for (const npc of this.npcs) {
-      if (Math.hypot(p.x - npc.x, p.y - npc.y) < 100) {
+      if (Math.hypot(p.x - npc.x, p.y - npc.y) < 110) {
         this.openNPCDialogue(npc);
         return;
       }
@@ -1066,6 +1308,7 @@ class MetroidvaniaWorldGame {
     if (!gate.isOpen && Math.hypot(p.x - gate.x, p.y - (gate.y + 80)) < 120) {
       if (p.keystonesCollected >= gate.required) {
         gate.isOpen = true;
+        this.addScreenShake(8.0, 0.2);
         sfx.playBreak();
         this.showToast('PORTÃO RÚNICO ABERTO!');
       } else {
@@ -1081,10 +1324,9 @@ class MetroidvaniaWorldGame {
     const isCompleted = p.questsCompleted.includes(npc.id);
     let text = isCompleted ? npc.completedText : npc.initialText;
 
-    // Lógica especial de quests
     if (npc.id === 'elder_jin' && !isCompleted && p.keystonesCollected >= 2) {
       p.questsCompleted.push(npc.id);
-      p.maxHealth = 120; // +1 Máscara de vida permanente!
+      p.maxHealth = 120; // +1 Máscara de vida (Total: 6 Máscaras)
       p.health = p.maxHealth;
       text = npc.completedText;
       this.updateHollowKnightHUD();
@@ -1165,7 +1407,7 @@ class MetroidvaniaWorldGame {
 
   updateHollowKnightHUD() {
     const p = this.player;
-    const maskCount = Math.floor(p.maxHealth / 20); // 5 ou 6 máscaras
+    const maskCount = Math.floor(p.maxHealth / 20);
     const currentMasks = Math.ceil((p.health / p.maxHealth) * maskCount);
     const container = document.getElementById('masks-container');
     if (container) {
@@ -1187,7 +1429,8 @@ class MetroidvaniaWorldGame {
     if (keyEl) keyEl.textContent = `🔑 ${p.keystonesCollected}/2`;
   }
 
-  update() {
+  // --- FÍSICA FIXED-STEP (60Hz Ticks) ---
+  fixedUpdate(dt) {
     if (this.isPaused) return;
 
     const p = this.player;
@@ -1195,11 +1438,26 @@ class MetroidvaniaWorldGame {
     const right = this.keys['KeyD'] || this.keys['ArrowRight'];
     const isSprint = this.keys['ShiftLeft'] || this.keys['ShiftRight'];
 
+    // Atualização de Timers
+    if (p.coyoteTimer > 0) p.coyoteTimer -= dt;
+    if (p.jumpBufferTimer > 0) p.jumpBufferTimer -= dt;
+    if (p.dropThroughTimer > 0) p.dropThroughTimer -= dt;
     if (p.dashCooldown > 0) p.dashCooldown--;
     if (p.isDashing) {
       p.dashTimer--;
       if (p.dashTimer <= 0) p.isDashing = false;
     }
+    if (this.screenShakeTimer > 0) {
+      this.screenShakeTimer -= dt;
+      if (this.screenShakeTimer <= 0) this.screenShake = 0;
+    }
+
+    // Squash and stretch lerp de volta ao normal
+    p.scaleX += (1.0 - p.scaleX) * 0.16;
+    p.scaleY += (1.0 - p.scaleY) * 0.16;
+
+    // Atualizar retículo de auto-targeting
+    this.activeGrappleTarget = this.findBestGrappleTarget();
 
     // Setor para Trilha Sonora Adaptativa
     sfx.currentSector = p.y > 1750 ? 'cave' : 'village';
@@ -1219,10 +1477,10 @@ class MetroidvaniaWorldGame {
     for (const lotus of this.lotusPlatforms) {
       if (lotus.fading) {
         lotus.timer++;
-        if (lotus.timer > 90) { // 1.5s
+        if (lotus.timer > 90) {
           lotus.active = false;
           lotus.fading = false;
-          lotus.respawnTimer = 180; // 3s
+          lotus.respawnTimer = 180;
         }
       } else if (!lotus.active) {
         lotus.respawnTimer--;
@@ -1233,29 +1491,60 @@ class MetroidvaniaWorldGame {
       }
     }
 
-    // Corrente de Vento
+    // Corrente de Vento Ascendente
     const wind = this.windChasm;
     const inWind = p.x >= wind.x && p.x <= wind.x + wind.w && p.y >= wind.y && p.y <= wind.y + wind.h;
-    if (inWind) {
-      if (p.isGliding || !p.isGrounded) {
-        p.vy = Math.max(p.vy - 1.2, wind.lift);
-      }
+    if (inWind && (p.isGliding || !p.isGrounded)) {
+      p.vy = Math.max(p.vy - 1.1, wind.lift);
     }
 
-    // Movimentação
-    if (!p.isDashing) {
-      const spd = isSprint ? p.sprintSpeed : p.speed;
+    // FÍSICA DE GRAPPLING HOOK (ELASTIC ROPE)
+    if (p.isGrappling && p.grappleTarget) {
+      const gx = p.grappleTargetPos.x;
+      const gy = p.grappleTargetPos.y;
+      const dx = gx - (p.x + 35);
+      const dy = gy - (p.y + 50);
+      const dist = Math.hypot(dx, dy);
+
+      if (dist < 42) {
+        // Chegou ao destino -> Lançamento com impulso vertical para cima
+        this.releaseGrappleLaunch();
+      } else {
+        // Tração elástica em direção ao gancho
+        const dirX = dx / dist;
+        const dirY = dy / dist;
+        p.vx += (dirX * p.grapplePullSpeed - p.vx) * 0.22;
+        p.vy += (dirY * p.grapplePullSpeed - p.vy) * 0.22;
+        p.x += p.vx;
+        p.y += p.vy;
+      }
+    } else if (!p.isDashing) {
+      // MOVIMENTAÇÃO NORMAL (ORI FLUID MOBILITY)
+      const targetSpeed = isSprint ? p.sprintSpeed : p.speed;
+
       if (left) {
         p.facing = -1;
-        p.vx = -spd;
-        if (p.isGrounded && Math.random() < 0.25) this.spawnDust(p.x + 45, p.y + 110, 1);
+        if (p.isGrounded) {
+          p.vx += (-targetSpeed - p.vx) * p.accel;
+          if (Math.random() < 0.20) this.spawnDust(p.x + 45, p.y + 110, 1);
+        } else {
+          p.vx += (-targetSpeed - p.vx) * p.airAccel;
+        }
       } else if (right) {
         p.facing = 1;
-        p.vx = spd;
-        if (p.isGrounded && Math.random() < 0.25) this.spawnDust(p.x + 20, p.y + 110, 1);
+        if (p.isGrounded) {
+          p.vx += (targetSpeed - p.vx) * p.accel;
+          if (Math.random() < 0.20) this.spawnDust(p.x + 20, p.y + 110, 1);
+        } else {
+          p.vx += (targetSpeed - p.vx) * p.airAccel;
+        }
       } else {
-        p.vx *= 0.8;
-        if (Math.abs(p.vx) < 0.1) p.vx = 0;
+        if (p.isGrounded) {
+          p.vx *= (1.0 - p.friction);
+          if (Math.abs(p.vx) < 0.1) p.vx = 0;
+        } else {
+          p.vx *= p.airDrag;
+        }
       }
 
       // Wall Cling
@@ -1266,33 +1555,38 @@ class MetroidvaniaWorldGame {
             if ((left && wall.side === 1) || (right && wall.side === -1)) {
               p.isWallSliding = true;
               p.wallDir = wall.side;
-              p.vy = Math.min(p.vy, 3.0);
+              p.vy = Math.min(p.vy, 2.8);
             }
           }
         }
       }
 
-      // Gravidade & Planador
+      // Gravidade & Planador Suave (Lotus Wings)
       const hasLotus = p.equippedAmulets.includes('lotus_wings');
-      const glideFall = hasLotus ? 0.08 : p.glideGravity;
+      const glideFall = hasLotus ? 0.04 : p.glideGravity;
+      const maxFall = hasLotus ? 1.4 : p.maxGlideFallSpeed;
 
       if (p.isGliding && p.vy > 0) {
-        p.vy = Math.min(p.vy + glideFall, hasLotus ? 1.4 : 2.5);
+        p.vy = Math.min(p.vy + glideFall, maxFall);
+        if (left) p.vx = -p.glideSteerSpeed;
+        else if (right) p.vx = p.glideSteerSpeed;
       } else if (!p.isWallSliding) {
         p.vy += p.gravity;
-        if (p.vy > 18) p.vy = 18;
+        if (p.vy > p.maxFallSpeed) p.vy = p.maxFallSpeed;
       }
 
       p.x += p.vx;
       p.y += p.vy;
     } else {
+      // Dash ativo
       p.x += p.vx;
     }
 
+    // Limites do Mundo
     p.x = Math.max(20, Math.min(this.worldWidth - 90, p.x));
     p.y = Math.max(50, Math.min(this.worldHeight - 130, p.y));
 
-    // Colisão com Plataformas
+    // COLISÃO COM PLATAFORMAS (ONE-WAY E SÓLIDAS)
     const prevGrounded = p.isGrounded;
     p.isGrounded = false;
     const footX = p.x + 35;
@@ -1306,15 +1600,32 @@ class MetroidvaniaWorldGame {
       }
 
       if (footX >= plat.x && footX <= plat.x + plat.w) {
+        // Se for One-Way e estiver dropando (S+Space), pula colisão
+        if (plat.oneWay && p.dropThroughTimer > 0) {
+          continue;
+        }
+
+        // Colisão com topo da plataforma
         if (p.vy >= 0 && footY >= plat.y && footY - p.vy <= plat.y + 24) {
           p.y = plat.y - 110;
           p.vy = 0;
           p.isGrounded = true;
+          p.coyoteTimer = 0.12; // Coyote time renovado
           p.canDoubleJump = true;
           p.isGliding = false;
+          p.isGrappling = false;
+
+          // Efeito de impacto ao aterrissar (Squash & Sound)
           if (!prevGrounded) {
+            p.scaleX = 1.26;
+            p.scaleY = 0.76;
             this.spawnDust(footX, plat.y, 6);
             sfx.playStep();
+          }
+
+          // Jump buffer execution
+          if (p.jumpBufferTimer > 0) {
+            this.handleJumpPress();
           }
           break;
         }
@@ -1328,15 +1639,17 @@ class MetroidvaniaWorldGame {
           p.y = lotus.y - 110;
           p.vy = 0;
           p.isGrounded = true;
+          p.coyoteTimer = 0.12;
           p.canDoubleJump = true;
           p.isGliding = false;
+          p.isGrappling = false;
           lotus.fading = true;
           break;
         }
       }
     }
 
-    // Colisão com Portão Rúnico (bloqueio horizontal)
+    // Colisão Horizontal com Portão Rúnico
     const gate = this.keystoneGate;
     if (!gate.isOpen && p.x + 70 >= gate.x && p.x <= gate.x + gate.w && p.y + 110 >= gate.y && p.y <= gate.y + gate.h) {
       p.x = gate.x - 70;
@@ -1378,7 +1691,7 @@ class MetroidvaniaWorldGame {
     const promptText = document.getElementById('interact-text');
 
     for (const npc of this.npcs) {
-      if (Math.hypot(p.x - npc.x, p.y - npc.y) < 100) {
+      if (Math.hypot(p.x - npc.x, p.y - npc.y) < 110) {
         nearTarget = true;
         if (promptText) promptText.textContent = `Conversar com ${npc.name.split(' ')[0]}`;
         break;
@@ -1395,7 +1708,7 @@ class MetroidvaniaWorldGame {
     }
     if (promptEl) promptEl.classList.toggle('show', nearTarget);
 
-    // Animações
+    // Animações do Jogador
     if (p.isAttacking) {
       p.state = 'attack';
       p.attackTimer++;
@@ -1411,7 +1724,7 @@ class MetroidvaniaWorldGame {
     } else if (!p.isGrounded) {
       p.state = 'jump';
       p.frameIndex = p.vy < 0 ? 0 : 2;
-    } else if (Math.abs(p.vx) > 0.5) {
+    } else if (Math.abs(p.vx) > 0.4) {
       const isFast = Math.abs(p.vx) > p.speed;
       p.state = isFast ? 'run' : 'walk';
       p.animTime += 1;
@@ -1428,12 +1741,15 @@ class MetroidvaniaWorldGame {
       if (count > 0) p.frameIndex = Math.floor(p.animTime / 30) % count;
     }
 
-    // Câmera
-    const targetCamX = Math.max(0, Math.min(this.worldWidth - this.viewWidth, p.x - this.viewWidth / 2 + 35));
-    const targetCamY = Math.max(0, Math.min(this.worldHeight - this.viewHeight, p.y - this.viewHeight / 2 + 55));
-    this.cameraX += (targetCamX - this.cameraX) * 0.08;
-    this.cameraY += (targetCamY - this.cameraY) * 0.08;
+    // Câmera Suave com Look-Ahead
+    const lookAheadX = p.facing * 130 + p.vx * 16;
+    const lookAheadY = Math.max(-100, Math.min(100, p.vy * 6));
+    const targetCamX = Math.max(0, Math.min(this.worldWidth - this.viewWidth, p.x + lookAheadX - this.viewWidth / 2 + 35));
+    const targetCamY = Math.max(0, Math.min(this.worldHeight - this.viewHeight, p.y + lookAheadY - this.viewHeight / 2 + 55));
+    this.cameraX += (targetCamX - this.cameraX) * 0.07;
+    this.cameraY += (targetCamY - this.cameraY) * 0.07;
 
+    // Partículas e Slashes
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const pt = this.particles[i];
       pt.x += pt.vx; pt.y += pt.vy; pt.life--;
@@ -1451,6 +1767,7 @@ class MetroidvaniaWorldGame {
     }
   }
 
+  // --- RENDERIZAÇÃO DO MUNDO & GAME FEEL ---
   render() {
     const ctx = this.ctx;
     const vw = this.viewWidth;
@@ -1464,8 +1781,17 @@ class MetroidvaniaWorldGame {
     ctx.fillRect(0, 0, vw, vh);
 
     ctx.save();
-    ctx.translate(-this.cameraX, -this.cameraY);
 
+    // Aplicação de Screen Shake
+    let shakeX = 0;
+    let shakeY = 0;
+    if (this.screenShake > 0) {
+      shakeX = (Math.random() - 0.5) * this.screenShake * 2;
+      shakeY = (Math.random() - 0.5) * this.screenShake * 2;
+    }
+    ctx.translate(-this.cameraX + shakeX, -this.cameraY + shakeY);
+
+    // Arte do Mapa de Fundo
     if (envImages['metroidvania_world_art'] && envImages['metroidvania_world_art'].complete) {
       ctx.drawImage(envImages['metroidvania_world_art'], 0, 0, this.worldWidth, this.worldHeight);
     }
@@ -1478,7 +1804,6 @@ class MetroidvaniaWorldGame {
       ctx.strokeStyle = '#38bdf8';
       ctx.lineWidth = 3;
       ctx.strokeRect(gate.x, gate.y, gate.w, gate.h);
-      // Runas brilhantes
       ctx.fillStyle = '#38bdf8';
       ctx.font = '16px serif';
       ctx.fillText('⛩️', gate.x + 8, gate.y + 50);
@@ -1493,10 +1818,11 @@ class MetroidvaniaWorldGame {
         ctx.strokeStyle = '#94a3b8';
         ctx.lineWidth = 2;
         ctx.strokeRect(wall.x, wall.y, wall.w, wall.h);
-        // Rachaduras
         ctx.strokeStyle = '#0f172a';
         ctx.beginPath();
-        ctx.moveTo(wall.x + 10, wall.y + 20); ctx.lineTo(wall.x + 25, wall.y + 60); ctx.lineTo(wall.x + 8, wall.y + 120);
+        ctx.moveTo(wall.x + 10, wall.y + 20);
+        ctx.lineTo(wall.x + 25, wall.y + 60);
+        ctx.lineTo(wall.x + 8, wall.y + 120);
         ctx.stroke();
       }
     }
@@ -1507,7 +1833,7 @@ class MetroidvaniaWorldGame {
         ctx.save();
         if (lotus.fading) {
           ctx.globalAlpha = 1.0 - (lotus.timer / 90.0) * 0.7;
-          ctx.translate((Math.random() - 0.5) * 3, 0); // Tremor
+          ctx.translate((Math.random() - 0.5) * 3, 0);
         }
         ctx.fillStyle = '#14b8a6';
         ctx.beginPath();
@@ -1530,32 +1856,154 @@ class MetroidvaniaWorldGame {
       }
     }
 
-    // 5. NPCs no Mundo
-    for (const npc of this.npcs) {
+    // 5. ÂNCORAS DO GANCHO (LANTERNAS, ANÉIS, PEDRAS) & RETÍCULO GLOW
+    const nowTime = Date.now() * 0.003;
+    for (const anchor of this.grappleAnchors) {
+      let ax = anchor.x;
+      let ay = anchor.y;
+      if (anchor.type === 'floating_stone') {
+        ay = anchor.baseY + Math.sin(Date.now() * 0.002 + anchor.phase) * 16;
+      }
+
       ctx.save();
-      ctx.translate(npc.x, npc.y + 30);
-      // Sombra
-      ctx.fillStyle = 'rgba(0,0,0,0.4)';
-      ctx.beginPath(); ctx.ellipse(0, 0, 20, 6, 0, 0, Math.PI * 2); ctx.fill();
-      // Ícone / Retrato estilizado
-      ctx.font = '32px sans-serif';
-      ctx.fillText(npc.portrait, -16, -10);
+      ctx.translate(ax, ay);
+
+      // Visual da Âncora
+      if (anchor.type === 'lantern') {
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath(); ctx.arc(0, 0, 8, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(0, 0, 14 + Math.sin(nowTime * 2) * 2, 0, Math.PI * 2); ctx.stroke();
+      } else if (anchor.type === 'ring') {
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(0, 0, 10, 0, Math.PI * 2); ctx.stroke();
+      } else if (anchor.type === 'overhang' || anchor.type === 'cavern') {
+        ctx.fillStyle = '#67e8f9';
+        ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#06b6d4';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(-8, -8, 16, 16);
+      }
+
+      // RETÍCULO DE AUTO-TARGETING COM GLOW
+      const isTargeted = this.activeGrappleTarget && this.activeGrappleTarget.id === anchor.id;
+      if (isTargeted) {
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2.5;
+        const pulse = Math.sin(nowTime * 6) * 4;
+        const reticleSize = 22 + pulse;
+
+        // Brackets / Mira de Bloqueio
+        ctx.beginPath();
+        // Canto superior esquerdo
+        ctx.moveTo(-reticleSize, -reticleSize + 8); ctx.lineTo(-reticleSize, -reticleSize); ctx.lineTo(-reticleSize + 8, -reticleSize);
+        // Canto superior direito
+        ctx.moveTo(reticleSize - 8, -reticleSize); ctx.lineTo(reticleSize, -reticleSize); ctx.lineTo(reticleSize, -reticleSize + 8);
+        // Canto inferior esquerdo
+        ctx.moveTo(-reticleSize, reticleSize - 8); ctx.lineTo(-reticleSize, reticleSize); ctx.lineTo(-reticleSize + 8, reticleSize);
+        // Canto inferior direito
+        ctx.moveTo(reticleSize - 8, reticleSize); ctx.lineTo(reticleSize, reticleSize); ctx.lineTo(reticleSize, reticleSize - 8);
+        ctx.stroke();
+
+        // Prompt de Tecla [K / F / Click Dir]
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('[K / F]', 0, -reticleSize - 4);
+      }
       ctx.restore();
     }
 
-    // 6. Espíritos Luminosos (Wisps)
-    const wispTime = Date.now() * 0.003;
+    // 6. LINHA DO GANCHO DE ESCALADA (SPIRIT TETHER)
+    const p = this.player;
+    if (p.isGrappling && p.grappleTarget) {
+      ctx.save();
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 4;
+      ctx.shadowColor = '#38bdf8';
+      ctx.shadowBlur = 12;
+
+      ctx.beginPath();
+      ctx.moveTo(p.x + 35, p.y + 50);
+      ctx.lineTo(p.grappleTargetPos.x, p.grappleTargetPos.y);
+      ctx.stroke();
+
+      // Feixe de energia no centro da corda
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(p.x + 35, p.y + 50);
+      ctx.lineTo(p.grappleTargetPos.x, p.grappleTargetPos.y);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 7. NPCs COM RESPIRAÇÃO OCIOSA & PROMPT
+    const npcAnimTime = Date.now() * 0.003;
+    for (const npc of this.npcs) {
+      ctx.save();
+      const breathSquash = Math.sin(npcAnimTime * 2.5) * 0.04;
+      const breathBob = Math.sin(npcAnimTime * 2.5) * 3;
+
+      ctx.translate(npc.x, npc.y + 30 + breathBob);
+      ctx.scale(1.0 - breathSquash, 1.0 + breathSquash);
+
+      // Sombra
+      ctx.fillStyle = 'rgba(0,0,0,0.45)';
+      ctx.beginPath(); ctx.ellipse(0, 0, 26, 8, 0, 0, Math.PI * 2); ctx.fill();
+
+      // Aura sutil
+      ctx.strokeStyle = npc.theme;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, -35, 36 + Math.sin(npcAnimTime * 3) * 2, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Sprite do NPC
+      const npcImg = npcImages[npc.id];
+      if (npcImg && npcImg.complete) {
+        const nw = 76;
+        const nh = 86;
+        ctx.imageSmoothingEnabled = true;
+        ctx.drawImage(npcImg, -nw / 2, -nh, nw, nh);
+      } else {
+        ctx.font = '34px sans-serif';
+        ctx.fillText(npc.portrait, -17, -8);
+      }
+
+      // Balão de Proximidade "💬 [E]"
+      const distToPlayer = Math.hypot(p.x - npc.x, p.y - npc.y);
+      if (distToPlayer < 110) {
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(-42, -58, 84, 24, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#f8fafc';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('💬 Falar [E]', 0, -42);
+      }
+      ctx.restore();
+    }
+
+    // 8. Espíritos Luminosos (Wisps)
     for (const wisp of this.spiritWisps) {
-      const curX = wisp.x + Math.sin(wispTime) * 12;
-      const curY = wisp.y + Math.sin(wispTime * 2) * 8;
+      const curX = wisp.x + Math.sin(nowTime) * 12;
+      const curY = wisp.y + Math.sin(nowTime * 2) * 8;
       ctx.fillStyle = wisp.color;
       ctx.beginPath(); ctx.arc(curX, curY, 8, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = wisp.color;
       ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(curX, curY, wisp.auraRadius + Math.sin(wispTime * 3) * 4, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(curX, curY, wisp.auraRadius + Math.sin(nowTime * 3) * 4, 0, Math.PI * 2); ctx.stroke();
     }
 
-    // 7. Cogumelos Bioluminescentes (Pogo)
+    // 9. Cogumelos Bioluminescentes (Pogo)
     for (const mush of this.pogoMushrooms) {
       ctx.fillStyle = mush.color;
       ctx.beginPath();
@@ -1563,7 +2011,7 @@ class MetroidvaniaWorldGame {
       ctx.fill();
     }
 
-    // 8. Pergaminhos
+    // 10. Pergaminhos
     for (const sc of this.scrolls) {
       if (!sc.collected) {
         const hoverY = sc.y + Math.sin(Date.now() * 0.005) * 6;
@@ -1574,7 +2022,7 @@ class MetroidvaniaWorldGame {
       }
     }
 
-    // 9. Pétalas
+    // 11. Pétalas de Cerejeira
     for (const petal of this.sakuraPetals) {
       ctx.save();
       ctx.translate(petal.x, petal.y);
@@ -1586,14 +2034,13 @@ class MetroidvaniaWorldGame {
       ctx.restore();
     }
 
-    // 10. Partículas
+    // 12. Partículas de Efeitos
     for (const pt of this.particles) {
       ctx.fillStyle = pt.color;
       ctx.beginPath(); ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2); ctx.fill();
     }
 
-    // 11. Desenhar Personagem
-    const p = this.player;
+    // 13. Desenho do Jogador com SQUASH & STRETCH
     let animKey = p.state;
     if (animKey === 'glide') animKey = 'jump';
     const frames = frameImages[animKey] || frameImages['idle'];
@@ -1602,17 +2049,21 @@ class MetroidvaniaWorldGame {
       const frameImg = frames[p.frameIndex];
       const fw = frameImg.naturalWidth || 140;
       const fh = frameImg.naturalHeight || 160;
-      const scale = 0.85;
-      const dw = fw * scale;
-      const dh = fh * scale;
+      const baseScale = 0.85;
 
       ctx.save();
       ctx.translate(p.x + 35, p.y + 110);
-      ctx.scale(p.facing, 1);
+      // Aplicar direção e Squash & Stretch dinâmico
+      ctx.scale(p.facing * (p.scaleX || 1.0), p.scaleY || 1.0);
 
+      // Sombra
       ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
       ctx.beginPath(); ctx.ellipse(0, 0, 26, 8, 0, 0, Math.PI * 2); ctx.fill();
 
+      const dw = fw * baseScale;
+      const dh = fh * baseScale;
+
+      // Asas do Planador quando planando
       if (p.isGliding) {
         ctx.strokeStyle = '#f59e0b';
         ctx.lineWidth = 4;
@@ -1626,7 +2077,7 @@ class MetroidvaniaWorldGame {
       ctx.restore();
     }
 
-    // 12. Rastro de Corte da Katana
+    // 14. Rastro de Corte da Katana
     for (const sl of this.slashes) {
       ctx.save();
       ctx.translate(sl.x, sl.y);
@@ -1730,7 +2181,6 @@ function setupMainMenu(game) {
     });
   }
 
-  // Botoes de Equipar Amuletos
   document.querySelectorAll('.btn-amulet-toggle').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const id = e.currentTarget.dataset.amulet;
@@ -1816,6 +2266,7 @@ function setupMainMenu(game) {
   }
 }
 
+// --- 7. LOOP PRINCIPAL COM DELTA-TIME INDEPENDENTE (FIXED TIMESTEP) ---
 window.addEventListener('DOMContentLoaded', () => {
   initAssets(() => {
     const studio = new StudioAnimator();
@@ -1825,9 +2276,22 @@ window.addEventListener('DOMContentLoaded', () => {
     if (studio.canvas) studio.selectAnimation('idle');
     game.updateHollowKnightHUD();
 
-    function mainLoop(timestamp) {
-      studio.render(timestamp);
-      game.update();
+    let lastTime = performance.now();
+    let accumulator = 0;
+    const FIXED_DT = 1 / 60; // 60Hz taxa física fixa
+
+    function mainLoop(currentTime) {
+      let deltaSec = (currentTime - lastTime) / 1000;
+      lastTime = currentTime;
+      if (deltaSec > 0.1) deltaSec = 0.1; // Previne espiral da morte em lag
+
+      accumulator += deltaSec;
+      while (accumulator >= FIXED_DT) {
+        game.fixedUpdate(FIXED_DT);
+        accumulator -= FIXED_DT;
+      }
+
+      studio.render(currentTime);
       game.render();
       requestAnimationFrame(mainLoop);
     }

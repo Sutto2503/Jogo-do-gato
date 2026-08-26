@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://cworld4k999"]
+[gd_scene load_steps=19 format=3 uid="uid://cworld4k999"]
 
 [ext_resource type="Script" path="res://scenes/levels/metroidvania_world.gd" id="1_worldscript"]
 [ext_resource type="PackedScene" uid="uid://b7vplayer678" path="res://scenes/player/player.tscn" id="2_playerscn"]
@@ -6,27 +6,40 @@
 [ext_resource type="PackedScene" uid="uid://cpogomush802" path="res://scenes/environment/pogo_mushroom.tscn" id="4_mush"]
 [ext_resource type="PackedScene" uid="uid://cmedshrine303" path="res://scenes/environment/meditation_shrine.tscn" id="5_shrine"]
 [ext_resource type="Texture2D" uid="uid://w4kmap" path="res://assets/environment/world_map_4k.png" id="6_worldart"]
+[ext_resource type="PackedScene" uid="uid://cnpc8882" path="res://scenes/npc/npc.tscn" id="7_npc"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_sec1_ground"]
-size = Vector2(1800, 120)
+size = Vector2(1750, 120)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bridge"]
-size = Vector2(850, 60)
+size = Vector2(770, 45)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_sec3_ground"]
-size = Vector2(1200, 120)
+size = Vector2(1330, 120)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_cliff_face"]
 size = Vector2(100, 1400)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_cliff_overhang"]
-size = Vector2(600, 50)
+size = Vector2(500, 30)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_subterranean_floor"]
 size = Vector2(3840, 150)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_floating_rock"]
-size = Vector2(140, 40)
+size = Vector2(120, 25)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_pagoda_tier1"]
+size = Vector2(280, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_pagoda_tier2"]
+size = Vector2(240, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_pagoda_tier3"]
+size = Vector2(180, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_house_roof"]
+size = Vector2(220, 20)
 
 [node name="MetroidvaniaWorld" type="Node2D"]
 script = ExtResource("1_worldscript")
@@ -50,15 +63,51 @@ texture = ExtResource("6_worldart")
 [node name="StaticColliders" type="Node2D" parent="."]
 
 [node name="Sector1_VillageGround" type="StaticBody2D" parent="StaticColliders"]
-position = Vector2(900, 1720)
+position = Vector2(875, 1740)
 collision_layer = 1
 collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticColliders/Sector1_VillageGround"]
 shape = SubResource("RectangleShape2D_sec1_ground")
 
+[node name="HouseRoof" type="StaticBody2D" parent="StaticColliders"]
+position = Vector2(190, 1540)
+collision_layer = 1
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticColliders/HouseRoof"]
+shape = SubResource("RectangleShape2D_house_roof")
+one_way_collision = true
+
+[node name="PagodaRoof_Tier1" type="StaticBody2D" parent="StaticColliders"]
+position = Vector2(660, 1440)
+collision_layer = 1
+collision_mask = 2
+
+[node name="CollisionShape2D" parent="StaticColliders/PagodaRoof_Tier1" type="CollisionShape2D"]
+shape = SubResource("RectangleShape2D_pagoda_tier1")
+one_way_collision = true
+
+[node name="PagodaRoof_Tier2" type="StaticBody2D" parent="StaticColliders"]
+position = Vector2(670, 1190)
+collision_layer = 1
+collision_mask = 2
+
+[node name="CollisionShape2D" parent="StaticColliders/PagodaRoof_Tier2" type="CollisionShape2D"]
+shape = SubResource("RectangleShape2D_pagoda_tier2")
+one_way_collision = true
+
+[node name="PagodaRoof_Tier3" type="StaticBody2D" parent="StaticColliders"]
+position = Vector2(690, 930)
+collision_layer = 1
+collision_mask = 2
+
+[node name="CollisionShape2D" parent="StaticColliders/PagodaRoof_Tier3" type="CollisionShape2D"]
+shape = SubResource("RectangleShape2D_pagoda_tier3")
+one_way_collision = true
+
 [node name="Sector2_StoneBridge" type="StaticBody2D" parent="StaticColliders"]
-position = Vector2(2150, 1570)
+position = Vector2(2135, 1557)
 collision_layer = 1
 collision_mask = 2
 
@@ -66,7 +115,7 @@ collision_mask = 2
 shape = SubResource("RectangleShape2D_bridge")
 
 [node name="Sector3_WildernessGround" type="StaticBody2D" parent="StaticColliders"]
-position = Vector2(3180, 1720)
+position = Vector2(3185, 1740)
 collision_layer = 1
 collision_mask = 2
 
@@ -82,7 +131,7 @@ collision_mask = 2
 shape = SubResource("RectangleShape2D_cliff_face")
 
 [node name="Sector3_CliffOverhang" type="StaticBody2D" parent="StaticColliders"]
-position = Vector2(3300, 1080)
+position = Vector2(3300, 1065)
 collision_layer = 1
 collision_mask = 2
 
@@ -91,7 +140,7 @@ shape = SubResource("RectangleShape2D_cliff_overhang")
 one_way_collision = true
 
 [node name="Sector4_SubterraneanFloor" type="StaticBody2D" parent="StaticColliders"]
-position = Vector2(1920, 2140)
+position = Vector2(1920, 2175)
 collision_layer = 1
 collision_mask = 2
 
@@ -99,7 +148,7 @@ collision_mask = 2
 shape = SubResource("RectangleShape2D_subterranean_floor")
 
 [node name="FloatingRock_1" type="StaticBody2D" parent="StaticColliders"]
-position = Vector2(2510, 890)
+position = Vector2(2540, 892)
 collision_layer = 1
 collision_mask = 2
 
@@ -108,7 +157,7 @@ shape = SubResource("RectangleShape2D_floating_rock")
 one_way_collision = true
 
 [node name="FloatingRock_2" type="StaticBody2D" parent="StaticColliders"]
-position = Vector2(2690, 670)
+position = Vector2(2710, 672)
 collision_layer = 1
 collision_mask = 2
 
@@ -116,22 +165,87 @@ collision_mask = 2
 shape = SubResource("RectangleShape2D_floating_rock")
 one_way_collision = true
 
+[node name="FloatingRock_3" type="StaticBody2D" parent="StaticColliders"]
+position = Vector2(2810, 452)
+collision_layer = 1
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticColliders/FloatingRock_3"]
+shape = SubResource("RectangleShape2D_floating_rock")
+one_way_collision = true
+
+[node name="GrappleAnchors" type="Node2D" parent="."]
+
+[node name="Lantern_Pagoda1" type="Node2D" parent="GrappleAnchors" groups=["GrapplePoint"]]
+position = Vector2(660, 1370)
+
+[node name="Lantern_Pagoda2" type="Node2D" parent="GrappleAnchors" groups=["GrapplePoint"]]
+position = Vector2(670, 1140)
+
+[node name="Lantern_Pagoda3" type="Node2D" parent="GrappleAnchors" groups=["GrapplePoint"]]
+position = Vector2(690, 880)
+
+[node name="Lantern_House" type="Node2D" parent="GrappleAnchors" groups=["GrapplePoint"]]
+position = Vector2(190, 1470)
+
+[node name="BridgeRing_West" type="Node2D" parent="GrappleAnchors" groups=["GrapplePoint"]]
+position = Vector2(1950, 1470)
+
+[node name="BridgeRing_East" type="Node2D" parent="GrappleAnchors" groups=["GrapplePoint"]]
+position = Vector2(2320, 1470)
+
+[node name="CliffAnchor" type="Node2D" parent="GrappleAnchors" groups=["GrapplePoint"]]
+position = Vector2(3050, 980)
+
+[node name="CaveAnchor_1" type="Node2D" parent="GrappleAnchors" groups=["GrapplePoint"]]
+position = Vector2(2150, 1800)
+
+[node name="CaveAnchor_2" type="Node2D" parent="GrappleAnchors" groups=["GrapplePoint"]]
+position = Vector2(2600, 1860)
+
+[node name="FloatingStoneAnchor_1" type="Node2D" parent="GrappleAnchors" groups=["GrapplePoint"]]
+position = Vector2(2540, 860)
+
+[node name="FloatingStoneAnchor_2" type="Node2D" parent="GrappleAnchors" groups=["GrapplePoint"]]
+position = Vector2(2710, 640)
+
+[node name="FloatingStoneAnchor_3" type="Node2D" parent="GrappleAnchors" groups=["GrapplePoint"]]
+position = Vector2(2810, 420)
+
 [node name="InteractiveObjects" type="Node2D" parent="."]
 
+[node name="NPC_ElderJin" parent="InteractiveObjects" instance=ExtResource("7_npc")]
+position = Vector2(420, 1570)
+npc_id = "elder_jin"
+npc_name = "Mestre Ancião Jin"
+
+[node name="NPC_BlacksmithKumi" parent="InteractiveObjects" instance=ExtResource("7_npc")]
+position = Vector2(920, 1570)
+npc_id = "blacksmith_kumi"
+npc_name = "Ferreira Kumi"
+
+[node name="NPC_ExplorerRen" parent="InteractiveObjects" instance=ExtResource("7_npc")]
+position = Vector2(2380, 1980)
+npc_id = "explorer_ren"
+npc_name = "Explorador Ren"
+
 [node name="SpiritWisp_1" parent="InteractiveObjects" instance=ExtResource("3_wisp")]
-position = Vector2(2510, 780)
+position = Vector2(2540, 780)
 
 [node name="SpiritWisp_2" parent="InteractiveObjects" instance=ExtResource("3_wisp")]
-position = Vector2(2680, 520)
+position = Vector2(2710, 560)
+
+[node name="SpiritWisp_3" parent="InteractiveObjects" instance=ExtResource("3_wisp")]
+position = Vector2(2820, 340)
 
 [node name="PogoMushroom_1" parent="InteractiveObjects" instance=ExtResource("4_mush")]
-position = Vector2(2980, 1640)
+position = Vector2(2880, 1655)
 
 [node name="PogoMushroom_2" parent="InteractiveObjects" instance=ExtResource("4_mush")]
-position = Vector2(3520, 1640)
+position = Vector2(3380, 1655)
 
 [node name="MeditationShrine" parent="InteractiveObjects" instance=ExtResource("5_shrine")]
-position = Vector2(320, 1620)
+position = Vector2(300, 1620)
 
 [node name="Player" parent="." instance=ExtResource("2_playerscn")]
-position = Vector2(400, 1620)
+position = Vector2(350, 1580)
