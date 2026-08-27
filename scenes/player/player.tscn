@@ -17,7 +17,7 @@ script = ExtResource("1_script")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 position = Vector2(0, -34)
-scale = Vector2(0.36, 0.36)
+scale = Vector2(0.18, 0.18)
 sprite_frames = ExtResource("2_frames")
 animation = &"idle"
 autoplay = "idle"

@@ -28,9 +28,9 @@ Esta skill governa os padrões de **qualidade visual, fluidez de movimentação,
    - **Micro-Stall Aéreo**: Redução de gravidade em 60% por 0.08s durante golpes aéreos para precisão cirúrgica.
    - **Transições Suaves**: Compatibilidade de pose inicial/final com `Idle`, `Run` e `Jump`.
 4. **Resolução & Escala Anatômica 1:1 Invariável**:
-   - **Escala de Corpo Imutável (1.0x)**: A altura do corpo do personagem (pés à cabeça) NUNCA deve sofrer downscaling ou upscaling arbitrário entre frames (~195-210px nativos).
-   - **Canvas Espaçoso para Efeitos (512x512 px)**: Golpes com arcos de fogo largos, mergulhos verticais ou giros circulares exigem mais espaço. Usar SEMPRE canvas 512x512 para comportar chamas de até 450px de largura sem encolher o personagem nem cortar os efeitos.
-   - **Ancoragem de Ponto de Contato (Ground Baseline)**: Todos os frames terrestres devem ter os pés do personagem fixados no mesmo `y_baseline` (ex: `y = 390` em canvas 512x512) para evitar flutuação ou trepidação no chão.
+   - **Canvas Base Universal (512x512 px)**: TODAS as animações (Idle, Run, Jump, Glide, Attack Combo, Spin, Downslash, Skid, Slide, Turn) possuem canvas uniforme de **512x512 px**.
+   - **Escala de Corpo Imutável (1:1)**: A altura anatômica do gatinho (pés ao topo das orelhas) é estritamente **~380–385 px** no canvas de 512px (correspondente a 191px @ 256px original). O gatinho NUNCA deve ser encolhido em animações de ataque ou golpes largos; os efeitos de fogo e chamas expandem para preencher o canvas de 512px.
+   - **Ancoragem de Ponto de Contato (Ground Baseline)**: Todos os frames com apoio no chão têm as patas ancoradas exatamente na linha de base **`y = 446 px`** em canvas 512x512, garantindo zero flutuação ou oscilação vertical.
 5. **Pipeline Técnico Chroma Key (#00FF00) & Anti-Invasão**:
    - **Segmentação por Componentes Conectados (`scipy.ndimage.label`)**: NUNCA usar divisão de grade matemática fixa (`w // cols`). Cada frame deve ter sua máscara alfa exclusiva gerada a partir do seu corpo + chamas vinculadas.
    - **Despill de Borda**: Ajustar canais verdes residuais no perímetro com interpolação de cor.

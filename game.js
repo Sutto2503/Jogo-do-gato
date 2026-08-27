@@ -2115,12 +2115,11 @@ class MetroidvaniaWorldGame {
 
     if (frames && frames[p.frameIndex] && frames[p.frameIndex].complete) {
       const frameImg = frames[p.frameIndex];
-      const fw = frameImg.naturalWidth || 256;
-      const fh = frameImg.naturalHeight || 256;
+      const fw = frameImg.naturalWidth || 512;
+      const fh = frameImg.naturalHeight || 512;
       
-      // Escala 1:1 para frames de 512px (ataques com chamas) e 256px (locomoção/glide)
-      const is512 = fw >= 500;
-      const baseScale = is512 ? 0.85 * (256.0 / 512.0) : 0.85;
+      // Escala 1:1 rigorosa para canvas uniforme de 512x512
+      const baseScale = 0.425;
 
       ctx.save();
       // Pivot exatamente na base dos pés
@@ -2135,8 +2134,8 @@ class MetroidvaniaWorldGame {
 
       const dw = fw * baseScale;
       const dh = fh * baseScale;
-      // Alinhamento anatômico do chão: y=390 em 512px ou y=224 em 256px
-      const footAnchorY = is512 ? dh * (390.0 / 512.0) : dh * (224.0 / 256.0);
+      // Alinhamento anatômico do chão: y=446 em 512px
+      const footAnchorY = dh * (446.0 / 512.0);
 
       ctx.imageSmoothingEnabled = false;
       ctx.drawImage(frameImg, -dw / 2, -footAnchorY, dw, dh);
