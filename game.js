@@ -365,41 +365,57 @@ const saveManager = new SaveManager();
 const frameImages = {};
 const envImages = {};
 const npcImages = {};
+const enemyImages = {};
 let assetsReady = false;
 
 function initAssets(callback) {
-  if (typeof ASSETS_BUNDLE !== 'undefined') {
-    Object.keys(ASSETS_BUNDLE).forEach(key => {
-      if (key !== 'environment' && key !== 'npcs') {
-        frameImages[key] = [];
-        ASSETS_BUNDLE[key].forEach(src => {
-          const img = new Image();
-          img.src = src;
-          frameImages[key].push(img);
-        });
-      }
-    });
-
-    if (ASSETS_BUNDLE.environment) {
-      Object.keys(ASSETS_BUNDLE.environment).forEach(key => {
-        const img = new Image();
-        img.src = ASSETS_BUNDLE.environment[key];
-        envImages[key] = img;
+  try {
+    if (typeof ASSETS_BUNDLE !== 'undefined') {
+      Object.keys(ASSETS_BUNDLE).forEach(key => {
+        const item = ASSETS_BUNDLE[key];
+        if (Array.isArray(item)) {
+          frameImages[key] = [];
+          item.forEach(src => {
+            const img = new Image();
+            img.src = src;
+            frameImages[key].push(img);
+          });
+        } else if (typeof item === 'object' && item !== null) {
+          if (key === 'environment') {
+            Object.keys(item).forEach(k => {
+              const img = new Image();
+              img.src = item[k];
+              envImages[k] = img;
+            });
+          } else if (key === 'npcs') {
+            Object.keys(item).forEach(k => {
+              const img = new Image();
+              img.src = item[k];
+              npcImages[k] = img;
+            });
+          } else if (key === 'iguana' || key === 'enemies') {
+            enemyImages[key] = enemyImages[key] || {};
+            Object.keys(item).forEach(anim => {
+              if (Array.isArray(item[anim])) {
+                enemyImages[key][anim] = [];
+                item[anim].forEach(src => {
+                  const img = new Image();
+                  img.src = src;
+                  enemyImages[key][anim].push(img);
+                });
+              }
+            });
+          }
+        }
       });
+      assetsReady = true;
     }
-
-    if (ASSETS_BUNDLE.npcs) {
-      Object.keys(ASSETS_BUNDLE.npcs).forEach(key => {
-        const img = new Image();
-        img.src = ASSETS_BUNDLE.npcs[key];
-        npcImages[key] = img;
-      });
+  } catch (err) {
+    console.error("Aviso ao carregar ASSETS_BUNDLE:", err);
+  } finally {
+    if (typeof callback === 'function') {
+      callback();
     }
-
-    assetsReady = true;
-    callback();
-  } else {
-    callback();
   }
 }
 
@@ -2047,8 +2063,10 @@ function setupMainMenu(game) {
   if (newGameBtn) {
     newGameBtn.addEventListener('click', () => {
       menuOverlay.classList.add('hidden');
-      game.player.x = 350;
-      game.player.y = 1580;
+      game.player.x = 400;
+      game.player.y = 440;
+      game.player.vx = 0;
+      game.player.vy = 0;
       game.player.health = 100;
       game.updateHollowKnightHUD();
       sfx.init();
