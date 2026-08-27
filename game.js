@@ -482,8 +482,21 @@ class StudioAnimator {
   selectAnimation(animKey) {
     this.currentAnim = animKey;
     this.currentFrame = 0;
-    const fpsMap = { idle: 4, walk: 8, run: 11, jump: 6, attack: 10, turn: 4 };
-    this.fps = fpsMap[animKey] || 8;
+    const fpsMap = {
+      idle: 5,
+      walk: 8,
+      run: 11,
+      jump: 8,
+      glide: 6,
+      attack: 14,
+      attack_combo: 14,
+      attack_spin: 14,
+      attack_downslash: 16,
+      skid: 10,
+      slide: 10,
+      turn: 10
+    };
+    this.fps = fpsMap[animKey] || 10;
 
     const titleEl = document.getElementById('current-anim-name');
     if (titleEl) titleEl.textContent = animKey.toUpperCase();
@@ -1199,12 +1212,28 @@ class MetroidvaniaWorldGame {
     const p = this.player;
     if (!p.isAttacking) {
       p.isAttacking = true;
-      p.state = 'attack';
-      p.frameIndex = 0;
       p.attackTimer = 0;
+      p.comboCount = (p.comboCount || 0) + 1;
 
       const isDown = this.keys['KeyS'] || this.keys['ArrowDown'];
-      p.isDownslashing = !p.isGrounded && isDown;
+      if (!p.isGrounded && isDown) {
+        p.isDownslashing = true;
+        p.attackType = 'attack_downslash';
+        p.vy = Math.max(p.vy, 16.0); // Mergulho vertical acelerado
+        this.addScreenShake(6.0, 0.15);
+      } else if (!p.isGrounded) {
+        p.isDownslashing = false;
+        p.attackType = 'attack_combo';
+        p.vy *= 0.40; // Micro-Stall Aéreo (Air Hang)
+        this.addScreenShake(4.5, 0.10);
+      } else {
+        p.isDownslashing = false;
+        // Alternância de combo no chão: Corte Horizontal <-> Giro 360°
+        p.attackType = (p.comboCount % 2 === 0) ? 'attack_spin' : 'attack_combo';
+        this.addScreenShake(4.0, 0.09);
+      }
+      p.state = p.attackType;
+      p.frameIndex = 0;
 
       const hasStormClaw = p.equippedAmulets.includes('storm_claw');
       const reachMultiplier = hasStormClaw ? 1.45 : 1.0;
@@ -1735,19 +1764,24 @@ class MetroidvaniaWorldGame {
 
     // Animações do Jogador
     if (p.isAttacking) {
-      p.state = 'attack';
+      p.state = p.attackType || 'attack_combo';
       p.attackTimer++;
+      const curFrames = frameImages[p.state] || frameImages['attack_combo'] || [];
       p.frameIndex = Math.floor(p.attackTimer / 4);
-      if (p.frameIndex >= (frameImages['attack'] || []).length) {
+      if (p.frameIndex >= curFrames.length) {
         p.isAttacking = false;
         p.isDownslashing = false;
-        p.state = 'idle';
+        p.state = p.isGrounded ? 'idle' : 'jump';
+        p.frameIndex = 0;
       }
     } else if (p.isGliding) {
-      p.state = 'jump';
-      p.frameIndex = 1;
+      p.state = 'glide';
+      p.glideAnimTimer = (p.glideAnimTimer || 0) + 1;
+      const glideList = frameImages['glide'] || [];
+      p.frameIndex = glideList.length > 0 ? Math.floor(p.glideAnimTimer / 10) % glideList.length : 0;
     } else if (!p.isGrounded) {
       p.state = 'jump';
+      p.glideAnimTimer = 0;
       p.frameIndex = p.vy < 0 ? 0 : 2;
     } else if (Math.abs(p.vx) > 0.3) {
       p.state = 'run';
@@ -2077,14 +2111,16 @@ class MetroidvaniaWorldGame {
 
     // 13. Desenho do Jogador com ALINHAMENTO EXATO DAS PATAS NO CHÃO & SQUASH
     let animKey = p.state;
-    if (animKey === 'glide') animKey = 'jump';
-    const frames = frameImages[animKey] || frameImages['idle'];
+    const frames = frameImages[animKey] || frameImages['attack_combo'] || frameImages['idle'];
 
     if (frames && frames[p.frameIndex] && frames[p.frameIndex].complete) {
       const frameImg = frames[p.frameIndex];
       const fw = frameImg.naturalWidth || 256;
       const fh = frameImg.naturalHeight || 256;
-      const baseScale = 0.85;
+      
+      // Escala 1:1 para frames de 512px (ataques com chamas) e 256px (locomoção/glide)
+      const is512 = fw >= 500;
+      const baseScale = is512 ? 0.85 * (256.0 / 512.0) : 0.85;
 
       ctx.save();
       // Pivot exatamente na base dos pés
@@ -2099,19 +2135,8 @@ class MetroidvaniaWorldGame {
 
       const dw = fw * baseScale;
       const dh = fh * baseScale;
-      // Alinhamento exato: as patas estão em y=224 no frame de 256px
-      const footAnchorY = dh * (224.0 / 256.0);
-
-      // Asas do Planador quando planando
-      if (p.isGliding) {
-        ctx.strokeStyle = '#f59e0b';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.arc(0, -footAnchorY - 10, 38, Math.PI, 0);
-        ctx.stroke();
-        ctx.fillStyle = 'rgba(239, 68, 68, 0.65)';
-        ctx.fill();
-      }
+      // Alinhamento anatômico do chão: y=390 em 512px ou y=224 em 256px
+      const footAnchorY = is512 ? dh * (390.0 / 512.0) : dh * (224.0 / 256.0);
 
       ctx.imageSmoothingEnabled = false;
       ctx.drawImage(frameImg, -dw / 2, -footAnchorY, dw, dh);
