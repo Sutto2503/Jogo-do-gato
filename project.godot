@@ -8,7 +8,7 @@ config_version=5
 
 config/name="Gatinho Samurai: Ecos Misticos"
 config/description="Jogo Metroidvania 2D inspirado em Hollow Knight, Ori and the Will of the Wisps e Nine Sols"
-run/main_scene="res://scenes/levels/metroidvania_world.tscn"
+run/main_scene="res://scenes/levels/test_ground_level.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
 config/icon="res://assets/frames/walk/walk_0.png"
 

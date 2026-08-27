@@ -593,14 +593,14 @@ class MetroidvaniaWorldGame {
     this.resizeCanvas();
     window.addEventListener('resize', () => this.resizeCanvas());
 
-    // Dimensões do Mundo Completo
-    this.worldWidth = 3840;
-    this.worldHeight = 2145;
+    // Dimensões do Cenário de Teste
+    this.worldWidth = 3640;
+    this.worldHeight = 1000;
 
     // Jogador Recalibrado para Física Fluida Estilo Ori
     this.player = {
-      x: 350,
-      y: 1580,
+      x: 400,
+      y: 440,
       vx: 0,
       vy: 0,
       speed: 5.5,             // Velocidade base de caminhada
@@ -651,7 +651,7 @@ class MetroidvaniaWorldGame {
       equippedAmulets: ['storm_claw'],
       unlockedAmulets: ['storm_claw', 'lotus_wings', 'spirit_eye'],
       questsCompleted: [],
-      checkpointName: 'Vila dos Samurais',
+      checkpointName: 'Cenário de Teste',
       dashCooldown: 0,
       isDashing: false,
       dashTimer: 0
@@ -665,63 +665,17 @@ class MetroidvaniaWorldGame {
     this.isPaused = false;
     this.activeGrappleTarget = null;
 
-    // Plataformas dos 4 Setores (Alinhadas perfeitamente com a arte 4K)
+    // Plataforma Reta com Colisão
     this.platforms = [
-      // SETOR 1: Vila, Casas Tradicionais & Pagoda Vermelha
-      { x: 0, y: 1680, w: 1750, h: 200, type: 'village_ground', solid: true },
-      
-      // Casas Tradicionais à esquerda da Pagoda (One-way escaláveis)
-      { x: 40,  y: 1470, w: 360, h: 20, type: 'house_eave_1', oneWay: true },
-      { x: 90,  y: 1360, w: 260, h: 20, type: 'house_ridge_1', oneWay: true },
-      { x: 410, y: 1460, w: 330, h: 20, type: 'house_eave_2', oneWay: true },
-      { x: 740, y: 1440, w: 230, h: 20, type: 'house_eave_3', oneWay: true },
-      { x: 770, y: 1365, w: 180, h: 20, type: 'house_ridge_3', oneWay: true },
-
-      // Telhados da Pagoda Vermelha (3 Andares + Cume perfeitamente centralizados)
-      { x: 960,  y: 1420, w: 640, h: 22, type: 'pagoda_tier_1', oneWay: true },
-      { x: 1020, y: 1165, w: 520, h: 22, type: 'pagoda_tier_2', oneWay: true },
-      { x: 1080, y: 905,  w: 400, h: 22, type: 'pagoda_tier_3', oneWay: true },
-      { x: 1220, y: 650,  w: 120, h: 20, type: 'pagoda_spire', oneWay: true },
-
-      // SETOR 2: Ponte de Pedra & Rio Sagrado (Centro) - Colisão Sólida Exata x in [1750, 2520]
-      { x: 1750, y: 1535, w: 770, h: 45, type: 'stone_bridge', solid: true },
-
-      // SETOR 3: Penhascos & Natureza Selvagem (Leste)
-      { x: 2520, y: 1680, w: 1330, h: 200, type: 'wild_ground', solid: true },
-      { x: 3050, y: 1050, w: 500, h: 30, type: 'cliff_overhang', oneWay: true },
-      { x: 2480, y: 880,  w: 120, h: 25, type: 'floating_stone', baseY: 880, phase: 0, oneWay: true },
-      { x: 2650, y: 660,  w: 120, h: 25, type: 'floating_stone', baseY: 660, phase: 1.8, oneWay: true },
-      { x: 2750, y: 440,  w: 120, h: 25, type: 'floating_stone', baseY: 440, phase: 3.2, oneWay: true },
-
-      // SETOR 4: Ruínas Subterrâneas & Tubulações (Sul)
-      { x: 0, y: 2100, w: 3840, h: 100, type: 'subterranean_floor', solid: true },
-      { x: 1900, y: 1850, w: 400, h: 30, type: 'sub_pipe', oneWay: true },
-      { x: 2800, y: 1920, w: 350, h: 30, type: 'sub_pipe', oneWay: true }
+      { x: 0, y: 560, w: 3640, h: 120, type: 'straight_ground', solid: true }
     ];
 
-    // Âncoras do Gancho de Escalada (Grappling Anchors com Retículo)
+    // Âncoras do Gancho de Escalada (Lanternas de Pedra)
     this.grappleAnchors = [
-      // Lanternas da Pagoda Vermelha
-      { id: 'g_pagoda_top_l', x: 1090, y: 885,  type: 'lantern', name: 'Lanterna Pagoda Topo Esq' },
-      { id: 'g_pagoda_top_r', x: 1470, y: 885,  type: 'lantern', name: 'Lanterna Pagoda Topo Dir' },
-      { id: 'g_pagoda_mid_l', x: 1030, y: 1145, type: 'lantern', name: 'Lanterna Pagoda Meio Esq' },
-      { id: 'g_pagoda_mid_r', x: 1530, y: 1145, type: 'lantern', name: 'Lanterna Pagoda Meio Dir' },
-      { id: 'g_pagoda_bot_l', x: 970,  y: 1400, type: 'lantern', name: 'Lanterna Pagoda Base Esq' },
-      // Lanternas das Casas Tradicionais da Vila
-      { id: 'g_house_3',      x: 860,  y: 1410, type: 'lantern', name: 'Lanterna da Entrada' },
-      { id: 'g_house_2',      x: 580,  y: 1430, type: 'lantern', name: 'Lanterna da Vila' },
-      { id: 'g_house_1',      x: 230,  y: 1440, type: 'lantern', name: 'Lanterna da Casa Oeste' },
-      // Anéis de Pedra da Ponte
-      { id: 'g_bridge_1',     x: 1880, y: 1515, type: 'ring',    name: 'Anel do Arco Ocidental' },
-      { id: 'g_bridge_2',     x: 2390, y: 1515, type: 'ring',    name: 'Anel do Arco Oriental' },
-      // Penhasco e Caverna
-      { id: 'g_cliff_1',      x: 3050, y: 980,  type: 'overhang', name: 'Saliente do Penhasco' },
-      { id: 'g_cave_1',       x: 2150, y: 1800, type: 'cavern',  name: 'Estalactite Rúnica' },
-      { id: 'g_cave_2',       x: 2600, y: 1860, type: 'cavern',  name: 'Gancho Subterrâneo' },
-      // Pedras Flutuantes
-      { id: 'g_stone_1',      x: 2540, y: 860,  type: 'floating_stone', baseY: 860, phase: 0 },
-      { id: 'g_stone_2',      x: 2710, y: 640,  type: 'floating_stone', baseY: 640, phase: 1.8 },
-      { id: 'g_stone_3',      x: 2810, y: 420,  type: 'floating_stone', baseY: 420, phase: 3.2 }
+      { id: 'g_lantern_1', x: 300,  y: 475, type: 'lantern', name: 'Lanterna de Pedra 1' },
+      { id: 'g_lantern_2', x: 1200, y: 475, type: 'lantern', name: 'Lanterna de Pedra 2' },
+      { id: 'g_lantern_3', x: 2100, y: 475, type: 'lantern', name: 'Lanterna de Pedra 3' },
+      { id: 'g_lantern_4', x: 3000, y: 475, type: 'lantern', name: 'Lanterna de Pedra 4' }
     ];
 
     // 🪷 Plataformas Efêmeras de Lótus (Ori Style)
@@ -1813,79 +1767,38 @@ class MetroidvaniaWorldGame {
     }
     ctx.translate(-this.cameraX + shakeX, -this.cameraY + shakeY);
 
-    // Arte do Mapa de Fundo
-    if (envImages['metroidvania_world_art'] && envImages['metroidvania_world_art'].complete) {
-      ctx.drawImage(envImages['metroidvania_world_art'], 0, 0, this.worldWidth, this.worldHeight);
-    }
-
-    // 1. Portão Rúnico (se fechado)
-    const gate = this.keystoneGate;
-    if (!gate.isOpen) {
-      ctx.fillStyle = '#1e293b';
-      ctx.fillRect(gate.x, gate.y, gate.w, gate.h);
-      ctx.strokeStyle = '#38bdf8';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(gate.x, gate.y, gate.w, gate.h);
-      ctx.fillStyle = '#38bdf8';
-      ctx.font = '16px serif';
-      ctx.fillText('⛩️', gate.x + 8, gate.y + 50);
-      ctx.fillText('🔒', gate.x + 8, gate.y + 100);
-    }
-
-    // 2. Paredes Destrutíveis
-    for (const wall of this.destructibleWalls) {
-      if (!wall.destroyed) {
-        ctx.fillStyle = '#334155';
-        ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
-        ctx.strokeStyle = '#94a3b8';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(wall.x, wall.y, wall.w, wall.h);
-        ctx.strokeStyle = '#0f172a';
-        ctx.beginPath();
-        ctx.moveTo(wall.x + 10, wall.y + 20);
-        ctx.lineTo(wall.x + 25, wall.y + 60);
-        ctx.lineTo(wall.x + 8, wall.y + 120);
-        ctx.stroke();
+    // Desenhar Faixas do Chão Reto com Grama e Muro de Pedra
+    const groundImg = envImages['ground_strip'];
+    if (groundImg && groundImg.complete) {
+      const stripW = 910;
+      const stripH = 130;
+      const totalStrips = Math.ceil(this.worldWidth / stripW) + 1;
+      for (let i = 0; i < totalStrips; i++) {
+        ctx.drawImage(groundImg, i * stripW, 510, stripW, stripH);
       }
+    } else {
+      ctx.fillStyle = '#2d5a27';
+      ctx.fillRect(0, 560, this.worldWidth, 120);
     }
 
-    // 3. Plataformas de Lótus Efêmeras
-    for (const lotus of this.lotusPlatforms) {
-      if (lotus.active) {
-        ctx.save();
-        if (lotus.fading) {
-          ctx.globalAlpha = 1.0 - (lotus.timer / 90.0) * 0.7;
-          ctx.translate((Math.random() - 0.5) * 3, 0);
-        }
-        ctx.fillStyle = '#14b8a6';
-        ctx.beginPath();
-        ctx.ellipse(lotus.x + lotus.w / 2, lotus.y + 10, lotus.w / 2, 8, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#5eead4';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        ctx.restore();
+    // Desenhar Lanternas de Pedra e Props
+    const lanternImg = envImages['stone_lantern'];
+    for (const anchor of this.grappleAnchors) {
+      if (lanternImg && lanternImg.complete) {
+        ctx.drawImage(lanternImg, anchor.x - 32, anchor.y - 45, 64, 75);
       }
+      // Brilho dourado ambiente suave
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.12)';
+      ctx.beginPath();
+      ctx.arc(anchor.x, anchor.y - 5, 32, 0, Math.PI * 2);
+      ctx.fill();
     }
 
-    // 4. Chaves de Espírito (Keystones)
-    for (const key of this.keystones) {
-      if (!key.collected) {
-        const hoverY = key.y + Math.sin(Date.now() * 0.006) * 5;
-        ctx.fillStyle = '#fbbf24';
-        ctx.font = '22px sans-serif';
-        ctx.fillText('🔑', key.x - 11, hoverY + 8);
-      }
-    }
-
-    // 5. ÂNCORAS DO GANCHO (LANTERNAS, ANÉIS, PEDRAS) & RETÍCULO GLOW
+    // 5. ÂNCORAS DO GANCHO & RETÍCULO GLOW
     const nowTime = Date.now() * 0.003;
     for (const anchor of this.grappleAnchors) {
       let ax = anchor.x;
       let ay = anchor.y;
-      if (anchor.type === 'floating_stone') {
-        ay = anchor.baseY + Math.sin(Date.now() * 0.002 + anchor.phase) * 16;
-      }
 
       ctx.save();
       ctx.translate(ax, ay);
