@@ -74,7 +74,7 @@ var combo_step: int = 0
 @export var attack_duration: float = 0.30
 
 # Game Feel: Squash & Stretch & Screen Shake & Look-Ahead
-var base_sprite_scale: Vector2 = Vector2(0.24, 0.24)
+var base_sprite_scale: Vector2 = Vector2(0.36, 0.36)
 var current_squash: Vector2 = Vector2(1.0, 1.0)
 var screen_shake_intensity: float = 0.0
 var screen_shake_timer: float = 0.0
@@ -435,7 +435,11 @@ func update_game_feel(delta: float) -> void:
 	# Squash and stretch lerp
 	current_squash = current_squash.lerp(Vector2(1.0, 1.0), 10.0 * delta)
 	if sprite:
-		sprite.scale = base_sprite_scale * current_squash
+		var target_scale = base_sprite_scale
+		if current_state == State.ATTACK:
+			# Sprites de combate em 512x512 para acomodar chamas (escala 1:1 anatômica)
+			target_scale = base_sprite_scale * 0.5
+		sprite.scale = target_scale * current_squash
 		
 	# Screen shake na câmera
 	if camera:
