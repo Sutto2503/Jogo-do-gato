@@ -6,7 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://clanternprop22" path="res://assets/environment/props/stone_lantern.png" id="4_lantern"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_straight_ground"]
-size = Vector2(3640, 110)
+size = Vector2(3640, 90)
 
 [node name="TestGroundLevel" type="Node2D"]
 script = ExtResource("1_script")
@@ -23,41 +23,34 @@ offset_right = 6000.0
 offset_bottom = 2500.0
 color = Color(0.08, 0.11, 0.18, 1)
 
-[node name="BedrockFill" type="ColorRect" parent="."]
-offset_left = -500.0
-offset_top = 635.0
-offset_right = 4500.0
-offset_bottom = 1400.0
-color = Color(0.09, 0.11, 0.14, 1)
-
 [node name="GroundStrip1" type="Sprite2D" parent="."]
-position = Vector2(455, 570)
+position = Vector2(455, 655)
 texture = ExtResource("3_groundart")
 
 [node name="GroundStrip2" type="Sprite2D" parent="."]
-position = Vector2(1365, 570)
+position = Vector2(1365, 655)
 texture = ExtResource("3_groundart")
 
 [node name="GroundStrip3" type="Sprite2D" parent="."]
-position = Vector2(2275, 570)
+position = Vector2(2275, 655)
 texture = ExtResource("3_groundart")
 
 [node name="GroundStrip4" type="Sprite2D" parent="."]
-position = Vector2(3185, 570)
+position = Vector2(3185, 655)
 texture = ExtResource("3_groundart")
 
 [node name="Lantern1" type="Sprite2D" parent="."]
-position = Vector2(300, 475)
+position = Vector2(300, 596)
 scale = Vector2(0.8, 0.8)
 texture = ExtResource("4_lantern")
 
 [node name="Lantern2" type="Sprite2D" parent="."]
-position = Vector2(1800, 475)
+position = Vector2(1800, 596)
 scale = Vector2(0.8, 0.8)
 texture = ExtResource("4_lantern")
 
 [node name="StraightGroundCollision" type="StaticBody2D" parent="."]
-position = Vector2(1820, 560)
+position = Vector2(1820, 675)
 collision_layer = 1
 collision_mask = 2
 
@@ -65,4 +58,4 @@ collision_mask = 2
 shape = SubResource("RectangleShape2D_straight_ground")
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
-position = Vector2(400, 440)
+position = Vector2(400, 520)

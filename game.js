@@ -611,12 +611,12 @@ class MetroidvaniaWorldGame {
 
     // Dimensões do Cenário de Teste
     this.worldWidth = 3640;
-    this.worldHeight = 1000;
+    this.worldHeight = 720;
 
     // Jogador Recalibrado para Física Fluida Estilo Ori
     this.player = {
       x: 400,
-      y: 440,
+      y: 520,
       vx: 0,
       vy: 0,
       speed: 5.5,             // Velocidade base de caminhada
@@ -681,18 +681,8 @@ class MetroidvaniaWorldGame {
     this.isPaused = false;
     this.activeGrappleTarget = null;
 
-    // Plataforma Reta com Colisão
-    this.platforms = [
-      { x: 0, y: 560, w: 3640, h: 120, type: 'straight_ground', solid: true }
-    ];
-
-    // Âncoras do Gancho de Escalada (Lanternas de Pedra)
-    this.grappleAnchors = [
-      { id: 'g_lantern_1', x: 300,  y: 475, type: 'lantern', name: 'Lanterna de Pedra 1' },
-      { id: 'g_lantern_2', x: 1200, y: 475, type: 'lantern', name: 'Lanterna de Pedra 2' },
-      { id: 'g_lantern_3', x: 2100, y: 475, type: 'lantern', name: 'Lanterna de Pedra 3' },
-      { id: 'g_lantern_4', x: 3000, y: 475, type: 'lantern', name: 'Lanterna de Pedra 4' }
-    ];
+    // Inicialização da Plataforma e Âncoras
+    this.updateGroundLayout();
 
     // 🪷 Plataformas Efêmeras de Lótus (Ori Style)
     this.lotusPlatforms = [
@@ -801,6 +791,29 @@ class MetroidvaniaWorldGame {
   resizeCanvas() {
     this.viewWidth = this.canvas.width = window.innerWidth;
     this.viewHeight = this.canvas.height = window.innerHeight;
+    this.worldWidth = 3640;
+    this.worldHeight = this.viewHeight;
+    this.updateGroundLayout();
+  }
+
+  updateGroundLayout() {
+    const groundBottom = this.viewHeight;
+    const groundSurface = groundBottom - 90;
+
+    this.platforms = [
+      { x: 0, y: groundSurface, w: this.worldWidth, h: 90, type: 'straight_ground', solid: true }
+    ];
+
+    this.grappleAnchors = [
+      { id: 'g_lantern_1', x: 300,  y: groundSurface, type: 'lantern', name: 'Lanterna de Pedra 1' },
+      { id: 'g_lantern_2', x: 1200, y: groundSurface, type: 'lantern', name: 'Lanterna de Pedra 2' },
+      { id: 'g_lantern_3', x: 2100, y: groundSurface, type: 'lantern', name: 'Lanterna de Pedra 3' },
+      { id: 'g_lantern_4', x: 3000, y: groundSurface, type: 'lantern', name: 'Lanterna de Pedra 4' }
+    ];
+
+    if (this.player && this.player.isGrounded) {
+      this.player.y = groundSurface - 110;
+    }
   }
 
   addScreenShake(intensity = 6.0, durationSec = 0.15) {
@@ -818,9 +831,10 @@ class MetroidvaniaWorldGame {
   createSakuraPetal(randomY = false) {
     const isRare = Math.random() < 0.12; // 12% são pétalas espirituais raras douradas
     const baseOpacity = isRare ? 0.75 + Math.random() * 0.25 : 0.35 + Math.random() * 0.55;
+    const groundSurface = (this.viewHeight || 720) - 90;
     return {
       x: Math.random() * this.worldWidth,
-      y: randomY ? Math.random() * 550 : -15 - Math.random() * 60,
+      y: randomY ? Math.random() * (groundSurface - 20) : -15 - Math.random() * 60,
       size: isRare ? 5 + Math.random() * 3.5 : 3 + Math.random() * 4.5,
       speedX: 0.35 + Math.random() * 1.25,
       speedY: 0.45 + Math.random() * 1.15,
@@ -834,7 +848,7 @@ class MetroidvaniaWorldGame {
       isRare: isRare,
       grounded: false,
       fadeTimer: 3.0,
-      groundY: 550 + (Math.random() - 0.5) * 8
+      groundY: groundSurface - 2 + (Math.random() - 0.5) * 6
     };
   }
 
@@ -1748,13 +1762,11 @@ class MetroidvaniaWorldGame {
       if (count > 0) p.frameIndex = Math.floor(p.animTime / 30) % count;
     }
 
-    // Câmera Suave com Look-Ahead
+    // Câmera Horizontal Suave com Look-Ahead (Câmera Vertical Travada Perfeitamente no Chão)
     const lookAheadX = p.facing * 130 + p.vx * 16;
-    const lookAheadY = Math.max(-100, Math.min(100, p.vy * 6));
     const targetCamX = Math.max(0, Math.min(this.worldWidth - this.viewWidth, p.x + lookAheadX - this.viewWidth / 2 + 35));
-    const targetCamY = Math.max(0, Math.min(this.worldHeight - this.viewHeight, p.y + lookAheadY - this.viewHeight / 2 + 55));
-    this.cameraX += (targetCamX - this.cameraX) * 0.07;
-    this.cameraY += (targetCamY - this.cameraY) * 0.07;
+    this.cameraX += (targetCamX - this.cameraX) * 0.08;
+    this.cameraY = 0; // Fixada no nível do chão (base do tileset toca o ponto mais baixo da tela)
 
     // Partículas e Slashes
     for (let i = this.particles.length - 1; i >= 0; i--) {
@@ -1825,39 +1837,31 @@ class MetroidvaniaWorldGame {
     }
     ctx.translate(-this.cameraX + shakeX, -this.cameraY + shakeY);
 
-    // Desenhar Faixas do Chão Reto com Grama e Muro de Pedra
+    // Desenhar Faixas do Chão Reto com Grama e Muro de Pedra (Base Colada no Fundo da Tela)
     const groundImg = envImages['ground_strip'];
+    const groundDrawY = this.viewHeight - 130;
     if (groundImg && groundImg.complete) {
       const stripW = 910;
       const stripH = 130;
       const totalStrips = Math.ceil(this.worldWidth / stripW) + 1;
       for (let i = 0; i < totalStrips; i++) {
-        ctx.drawImage(groundImg, i * stripW, 510, stripW, stripH);
+        ctx.drawImage(groundImg, i * stripW, groundDrawY, stripW, stripH);
       }
     }
-
-    // Preenchimento de Rocha / Subsolo sólido até a base da tela (sem vazio)
-    ctx.fillStyle = '#181b24';
-    ctx.fillRect(0, 635, this.worldWidth, this.worldHeight - 635);
-    ctx.strokeStyle = '#232836';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(0, 636);
-    ctx.lineTo(this.worldWidth, 636);
-    ctx.stroke();
 
     // Desenhar Lanternas de Pedra com Silhueta Limpa e Chama Mística Estética
     const lanternImg = envImages['stone_lantern'];
     const nowTime = Date.now() * 0.003;
+    const groundSurface = this.viewHeight - 90;
 
     for (const anchor of this.grappleAnchors) {
       const lx = anchor.x;
-      const ly = anchor.y;
-      const chamberY = ly - 14;
+      const ly = groundSurface;
+      const chamberY = ly - 36;
 
-      // 1. Sprite da Lanterna de Pedra Lapidada
+      // 1. Sprite da Lanterna de Pedra Lapidada (apoiada na grama)
       if (lanternImg && lanternImg.complete) {
-        ctx.drawImage(lanternImg, lx - 30, ly - 48, 60, 68);
+        ctx.drawImage(lanternImg, lx - 30, ly - 62, 60, 68);
       }
 
       // 2. Chama Espiritual Interna da Lanterna (Suave, Orgânica e Mística)
@@ -2147,7 +2151,7 @@ function setupMainMenu(game) {
     newGameBtn.addEventListener('click', () => {
       menuOverlay.classList.add('hidden');
       game.player.x = 400;
-      game.player.y = 440;
+      game.player.y = (game.viewHeight || 720) - 90 - 110;
       game.player.vx = 0;
       game.player.vy = 0;
       game.player.health = 100;
