@@ -69,6 +69,8 @@ var grapple_cooldown: float = 0.0
 # Ataque
 var is_attacking: bool = false
 var attack_timer: float = 0.0
+var current_attack_type: String = "attack"
+var combo_step: int = 0
 @export var attack_duration: float = 0.30
 
 # Game Feel: Squash & Stretch & Screen Shake & Look-Ahead
@@ -352,11 +354,26 @@ func execute_attack() -> void:
 	is_attacking = true
 	attack_timer = attack_duration
 	current_state = State.ATTACK
-	trigger_screen_shake(3.5, 0.08)
+	
+	# Checar Downslash (Ataque para baixo no ar)
+	if not is_on_floor() and Input.is_action_pressed("move_down"):
+		current_attack_type = "downslash"
+		velocity.y = max(velocity.y, 450.0) # Mergulho vertical veloz
+		trigger_screen_shake(4.5, 0.10)
+	elif not is_on_floor():
+		# Micro-Stall Aéreo (Air Hang): amortece a gravidade momentaneamente para precisão
+		current_attack_type = "attack"
+		velocity.y *= 0.40
+		trigger_screen_shake(3.5, 0.08)
+	else:
+		# Combo no chão (Alterna entre corte horizontal e finalizador giratório)
+		combo_step = (combo_step + 1) % 2
+		current_attack_type = "attack_spin" if combo_step == 1 else "attack"
+		trigger_screen_shake(3.5, 0.08)
 	
 	if attack_area:
 		attack_area.monitoring = true
-		get_tree().create_timer(0.18).timeout.connect(func():
+		get_tree().create_timer(0.20).timeout.connect(func():
 			if attack_area:
 				attack_area.monitoring = false
 		)
@@ -455,7 +472,7 @@ func update_animations() -> void:
 		State.GRAPPLE_PULL:
 			sprite.play("jump")
 		State.ATTACK:
-			sprite.play("attack")
+			sprite.play(current_attack_type)
 
 func update_grapple_visuals() -> void:
 	if is_grappling and grapple_line and is_instance_valid(target_grapple_point):
