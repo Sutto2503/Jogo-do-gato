@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "image": "iguana_bandit_all_animations.png",
+    "image_hd": "iguana_bandit_all_animations_hd.png",
+    "size": {
+      "w": 1536,
+      "h": 1280
+    },
+    "size_hd": {
+      "w": 3072,
+      "h": 2560
+    },
+    "frameSize": {
+      "w": 256,
+      "h": 256
+    },
+    "frameSize_hd": {
+      "w": 512,
+      "h": 512
+    },
+    "baselineY": 224,
+    "baselineY_hd": 448
+  },
+  "animations": {
+    "idle": {
+      "row": 0,
+      "frameCount": 5,
+      "fps": 5,
+      "loop": true
+    },
+    "walk": {
+      "row": 1,
+      "frameCount": 6,
+      "fps": 10,
+      "loop": true
+    },
+    "attack": {
+      "row": 2,
+      "frameCount": 6,
+      "fps": 12,
+      "loop": false
+    },
+    "hurt": {
+      "row": 3,
+      "frameCount": 3,
+      "fps": 10,
+      "loop": false
+    },
+    "death": {
+      "row": 4,
+      "frameCount": 6,
+      "fps": 8,
+      "loop": false
+    }
+  }
+}
