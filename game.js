@@ -797,11 +797,12 @@ class MetroidvaniaWorldGame {
   }
 
   updateGroundLayout() {
-    const groundBottom = this.viewHeight;
+    const bleedY = 18; // 18px de bleed/overscan abaixo da tela para cobrir 100% sem margem
+    const groundBottom = this.viewHeight + bleedY;
     const groundSurface = groundBottom - 90;
 
     this.platforms = [
-      { x: 0, y: groundSurface, w: this.worldWidth, h: 90, type: 'straight_ground', solid: true }
+      { x: 0, y: groundSurface, w: this.worldWidth, h: 90 + bleedY + 40, type: 'straight_ground', solid: true }
     ];
 
     this.grappleAnchors = [
@@ -831,7 +832,8 @@ class MetroidvaniaWorldGame {
   createSakuraPetal(randomY = false) {
     const isRare = Math.random() < 0.12; // 12% são pétalas espirituais raras douradas
     const baseOpacity = isRare ? 0.75 + Math.random() * 0.25 : 0.35 + Math.random() * 0.55;
-    const groundSurface = (this.viewHeight || 720) - 90;
+    const bleedY = 18;
+    const groundSurface = (this.viewHeight || 720) + bleedY - 90;
     return {
       x: Math.random() * this.worldWidth,
       y: randomY ? Math.random() * (groundSurface - 20) : -15 - Math.random() * 60,
@@ -1837,9 +1839,10 @@ class MetroidvaniaWorldGame {
     }
     ctx.translate(-this.cameraX + shakeX, -this.cameraY + shakeY);
 
-    // Desenhar Faixas do Chão Reto com Grama e Muro de Pedra (Base Colada no Fundo da Tela)
+    // Desenhar Faixas do Chão Reto com Grama e Muro de Pedra (com 18px de bleed cobrindo 100% da base)
     const groundImg = envImages['ground_strip'];
-    const groundDrawY = this.viewHeight - 130;
+    const bleedY = 18;
+    const groundDrawY = this.viewHeight + bleedY - 130;
     if (groundImg && groundImg.complete) {
       const stripW = 910;
       const stripH = 130;
@@ -1852,7 +1855,7 @@ class MetroidvaniaWorldGame {
     // Desenhar Lanternas de Pedra com Silhueta Limpa e Chama Mística Estética
     const lanternImg = envImages['stone_lantern'];
     const nowTime = Date.now() * 0.003;
-    const groundSurface = this.viewHeight - 90;
+    const groundSurface = this.viewHeight + bleedY - 90;
 
     for (const anchor of this.grappleAnchors) {
       const lx = anchor.x;
@@ -2150,8 +2153,9 @@ function setupMainMenu(game) {
   if (newGameBtn) {
     newGameBtn.addEventListener('click', () => {
       menuOverlay.classList.add('hidden');
+      const bleedY = 18;
       game.player.x = 400;
-      game.player.y = (game.viewHeight || 720) - 90 - 110;
+      game.player.y = (game.viewHeight || 720) + bleedY - 90 - 110;
       game.player.vx = 0;
       game.player.vy = 0;
       game.player.health = 100;
