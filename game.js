@@ -809,18 +809,33 @@ class MetroidvaniaWorldGame {
   }
 
   initSakura() {
-    for (let i = 0; i < 65; i++) {
-      this.sakuraPetals.push({
-        x: Math.random() * this.worldWidth,
-        y: Math.random() * this.worldHeight,
-        size: 4 + Math.random() * 5,
-        speedX: 1.0 + Math.random() * 1.5,
-        speedY: 1.2 + Math.random() * 1.8,
-        angle: Math.random() * Math.PI * 2,
-        rotSpeed: 0.02 + Math.random() * 0.03,
-        color: Math.random() > 0.35 ? 'rgba(255, 182, 193, 0.85)' : 'rgba(251, 191, 36, 0.75)'
-      });
+    this.sakuraPetals = [];
+    for (let i = 0; i < 75; i++) {
+      this.sakuraPetals.push(this.createSakuraPetal(true));
     }
+  }
+
+  createSakuraPetal(randomY = false) {
+    const isRare = Math.random() < 0.12; // 12% são pétalas espirituais raras douradas
+    const baseOpacity = isRare ? 0.75 + Math.random() * 0.25 : 0.35 + Math.random() * 0.55;
+    return {
+      x: Math.random() * this.worldWidth,
+      y: randomY ? Math.random() * 550 : -15 - Math.random() * 60,
+      size: isRare ? 5 + Math.random() * 3.5 : 3 + Math.random() * 4.5,
+      speedX: 0.35 + Math.random() * 1.25,
+      speedY: 0.45 + Math.random() * 1.15,
+      swayPhase: Math.random() * Math.PI * 2,
+      swaySpeed: 0.02 + Math.random() * 0.03,
+      swayAmp: 0.5 + Math.random() * 1.1,
+      angle: Math.random() * Math.PI * 2,
+      rotSpeed: 0.015 + Math.random() * 0.025,
+      baseOpacity: baseOpacity,
+      opacity: baseOpacity,
+      isRare: isRare,
+      grounded: false,
+      fadeTimer: 3.0,
+      groundY: 550 + (Math.random() - 0.5) * 8
+    };
   }
 
   setupControls() {
@@ -1752,10 +1767,37 @@ class MetroidvaniaWorldGame {
       sl.life--;
       if (sl.life <= 0) this.slashes.splice(i, 1);
     }
-    for (const petal of this.sakuraPetals) {
-      petal.x += petal.speedX; petal.y += petal.speedY; petal.angle += petal.rotSpeed;
-      if (petal.y > this.worldHeight) petal.y = -10;
-      if (petal.x > this.worldWidth) petal.x = -10;
+    // Atualização de Pétalas de Sakura com Colisão no Chão e Fade-out de 3s
+    for (let i = 0; i < this.sakuraPetals.length; i++) {
+      const petal = this.sakuraPetals[i];
+      if (!petal.grounded) {
+        petal.swayPhase += petal.swaySpeed;
+        petal.x += petal.speedX + Math.sin(petal.swayPhase) * petal.swayAmp;
+        petal.y += petal.speedY;
+        petal.angle += petal.rotSpeed;
+
+        // Pouso no Chão da Grama (não atravessa)
+        if (petal.y >= petal.groundY) {
+          petal.y = petal.groundY;
+          petal.grounded = true;
+          petal.fadeTimer = 3.0; // 3 segundos de fade out
+          petal.angle = (Math.random() - 0.5) * 0.35; // Repousa suavemente na grama
+        }
+      } else {
+        // Pétala no chão esvanecendo suavemente durante 3 segundos
+        petal.fadeTimer -= 1 / 60;
+        petal.opacity = petal.baseOpacity * Math.max(0, petal.fadeTimer / 3.0);
+
+        if (petal.fadeTimer <= 0) {
+          // Renascer suavemente no topo
+          this.sakuraPetals[i] = this.createSakuraPetal(false);
+        }
+      }
+
+      // Se sair da tela lateral
+      if (petal.x > this.worldWidth + 30) {
+        petal.x = -20;
+      }
     }
   }
 
@@ -1804,55 +1846,99 @@ class MetroidvaniaWorldGame {
     ctx.lineTo(this.worldWidth, 636);
     ctx.stroke();
 
-    // Desenhar Lanternas de Pedra com Silhueta Limpa e Glow
+    // Desenhar Lanternas de Pedra com Silhueta Limpa e Chama Mística Estética
     const lanternImg = envImages['stone_lantern'];
-    for (const anchor of this.grappleAnchors) {
-      if (lanternImg && lanternImg.complete) {
-        ctx.drawImage(lanternImg, anchor.x - 30, anchor.y - 48, 60, 68);
-      }
-      // Brilho dourado suave emanando da lanterna
-      ctx.fillStyle = 'rgba(251, 191, 36, 0.15)';
-      ctx.beginPath();
-      ctx.arc(anchor.x, anchor.y - 12, 28, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // 5. ÂNCORAS DO GANCHO & RETÍCULO GLOW
     const nowTime = Date.now() * 0.003;
+
     for (const anchor of this.grappleAnchors) {
-      let ax = anchor.x;
-      let ay = anchor.y;
+      const lx = anchor.x;
+      const ly = anchor.y;
+      const chamberY = ly - 14;
 
-      ctx.save();
-      ctx.translate(ax, ay);
+      // 1. Sprite da Lanterna de Pedra Lapidada
+      if (lanternImg && lanternImg.complete) {
+        ctx.drawImage(lanternImg, lx - 30, ly - 48, 60, 68);
+      }
 
-      // RETÍCULO DE AUTO-TARGETING COM GLOW
+      // 2. Chama Espiritual Interna da Lanterna (Suave, Orgânica e Mística)
+      const flamePulse = Math.sin(nowTime * 4 + anchor.x) * 1.5;
+
+      // Halo de iluminação ambiente âmbar suave
+      const ambientGlow = ctx.createRadialGradient(lx, chamberY, 2, lx, chamberY, 30 + flamePulse);
+      ambientGlow.addColorStop(0, 'rgba(254, 240, 138, 0.40)');
+      ambientGlow.addColorStop(0.5, 'rgba(245, 158, 11, 0.18)');
+      ambientGlow.addColorStop(1, 'rgba(245, 158, 11, 0)');
+      ctx.fillStyle = ambientGlow;
+      ctx.beginPath();
+      ctx.arc(lx, chamberY, 30 + flamePulse, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Núcleo da Chama Espiritual no interior da janela da lanterna
+      const coreGlow = ctx.createRadialGradient(lx, chamberY, 1, lx, chamberY, 6.5 + flamePulse);
+      coreGlow.addColorStop(0, '#ffffff');
+      coreGlow.addColorStop(0.35, '#fde047');
+      coreGlow.addColorStop(0.75, '#f97316');
+      coreGlow.addColorStop(1, 'rgba(239, 68, 68, 0)');
+      ctx.fillStyle = coreGlow;
+      ctx.beginPath();
+      ctx.arc(lx, chamberY, 6.5 + flamePulse, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Pequenas fagulhas místicas subindo da lanterna
+      const emberOffset = (Date.now() * 0.018 + anchor.x * 5) % 22;
+      const emberY = chamberY - emberOffset;
+      const emberAlpha = Math.max(0, 1.0 - emberOffset / 22.0);
+      ctx.fillStyle = `rgba(251, 191, 36, ${emberAlpha * 0.75})`;
+      ctx.beginPath();
+      ctx.arc(lx + Math.sin(Date.now() * 0.006 + anchor.x) * 3, emberY, 1.6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 3. Retículo Rúnico Estético quando o Jogador está no Alcance / Mirado
       const isTargeted = this.activeGrappleTarget && this.activeGrappleTarget.id === anchor.id;
       if (isTargeted) {
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 2.5;
-        const pulse = Math.sin(nowTime * 6) * 4;
-        const reticleSize = 22 + pulse;
+        ctx.save();
+        ctx.translate(lx, chamberY);
 
-        // Brackets / Mira de Bloqueio
+        const targetPulse = Math.sin(nowTime * 6) * 3;
+        const ringRadius = 22 + targetPulse;
+
+        // Anel de Energia Espiritual com Glow
+        ctx.shadowColor = '#38bdf8';
+        ctx.shadowBlur = 10;
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        // Canto superior esquerdo
-        ctx.moveTo(-reticleSize, -reticleSize + 8); ctx.lineTo(-reticleSize, -reticleSize); ctx.lineTo(-reticleSize + 8, -reticleSize);
-        // Canto superior direito
-        ctx.moveTo(reticleSize - 8, -reticleSize); ctx.lineTo(reticleSize, -reticleSize); ctx.lineTo(reticleSize, -reticleSize + 8);
-        // Canto inferior esquerdo
-        ctx.moveTo(-reticleSize, reticleSize - 8); ctx.lineTo(-reticleSize, reticleSize); ctx.lineTo(-reticleSize + 8, reticleSize);
-        // Canto inferior direito
-        ctx.moveTo(reticleSize - 8, reticleSize); ctx.lineTo(reticleSize, reticleSize); ctx.lineTo(reticleSize, reticleSize - 8);
+        ctx.arc(0, 0, ringRadius, 0, Math.PI * 2);
         ctx.stroke();
 
-        // Prompt de Tecla [K / F]
+        // 4 Marcadores Rúnicos Cardeais em Rotação Lenta
+        for (let a = 0; a < 4; a++) {
+          const angle = a * (Math.PI / 2) + nowTime * 1.5;
+          const mx = Math.cos(angle) * (ringRadius + 4);
+          const my = Math.sin(angle) * (ringRadius + 4);
+          ctx.fillStyle = '#e0f2fe';
+          ctx.beginPath();
+          ctx.arc(mx, my, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Tag Flutuante Elegante [K / F]
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(-24, -ringRadius - 22, 48, 18, 4);
+        ctx.fill();
+        ctx.stroke();
+
         ctx.fillStyle = '#38bdf8';
-        ctx.font = 'bold 10px sans-serif';
+        ctx.font = 'bold 10px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('[K / F]', 0, -reticleSize - 4);
+        ctx.fillText('K / F', 0, -ringRadius - 10);
+
+        ctx.restore();
       }
-      ctx.restore();
     }
 
     // 6. LINHA DO GANCHO DE ESCALADA (SPIRIT TETHER)
@@ -1943,15 +2029,36 @@ class MetroidvaniaWorldGame {
       }
     }
 
-    // 11. Pétalas de Cerejeira
+    // 11. Pétalas de Cerejeira com Variação, Brilho e Fade-out no Chão
     for (const petal of this.sakuraPetals) {
+      if (petal.opacity <= 0.01) continue;
       ctx.save();
       ctx.translate(petal.x, petal.y);
       ctx.rotate(petal.angle);
-      ctx.fillStyle = petal.color;
+      ctx.globalAlpha = Math.max(0, Math.min(1, petal.opacity));
+
+      if (petal.isRare) {
+        // Pétala Espiritual Rara com Glow Dourado
+        ctx.shadowColor = '#fbbf24';
+        ctx.shadowBlur = 8;
+        ctx.fillStyle = '#fde68a';
+      } else {
+        ctx.fillStyle = '#fbcfe8';
+      }
+
       ctx.beginPath();
-      ctx.ellipse(0, 0, petal.size, petal.size * 0.5, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, petal.size, petal.size * 0.48, 0, 0, Math.PI * 2);
       ctx.fill();
+
+      // Sutil nervura central da pétala
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = petal.isRare ? '#f59e0b' : '#f472b6';
+      ctx.lineWidth = 0.7;
+      ctx.beginPath();
+      ctx.moveTo(-petal.size * 0.6, 0);
+      ctx.lineTo(petal.size * 0.6, 0);
+      ctx.stroke();
+
       ctx.restore();
     }
 
