@@ -40,12 +40,12 @@ position = Vector2(3185, 673)
 texture = ExtResource("3_groundart")
 
 [node name="Lantern1" type="Sprite2D" parent="."]
-position = Vector2(300, 614)
+position = Vector2(300, 606)
 scale = Vector2(0.8, 0.8)
 texture = ExtResource("4_lantern")
 
 [node name="Lantern2" type="Sprite2D" parent="."]
-position = Vector2(1800, 614)
+position = Vector2(1800, 606)
 scale = Vector2(0.8, 0.8)
 texture = ExtResource("4_lantern")
 
@@ -58,4 +58,4 @@ collision_mask = 2
 shape = SubResource("RectangleShape2D_straight_ground")
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
-position = Vector2(400, 538)
+position = Vector2(400, 638)
