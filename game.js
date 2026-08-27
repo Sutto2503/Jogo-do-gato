@@ -1792,21 +1792,28 @@ class MetroidvaniaWorldGame {
       for (let i = 0; i < totalStrips; i++) {
         ctx.drawImage(groundImg, i * stripW, 510, stripW, stripH);
       }
-    } else {
-      ctx.fillStyle = '#2d5a27';
-      ctx.fillRect(0, 560, this.worldWidth, 120);
     }
 
-    // Desenhar Lanternas de Pedra e Props
+    // Preenchimento de Rocha / Subsolo sólido até a base da tela (sem vazio)
+    ctx.fillStyle = '#181b24';
+    ctx.fillRect(0, 635, this.worldWidth, this.worldHeight - 635);
+    ctx.strokeStyle = '#232836';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, 636);
+    ctx.lineTo(this.worldWidth, 636);
+    ctx.stroke();
+
+    // Desenhar Lanternas de Pedra com Silhueta Limpa e Glow
     const lanternImg = envImages['stone_lantern'];
     for (const anchor of this.grappleAnchors) {
       if (lanternImg && lanternImg.complete) {
-        ctx.drawImage(lanternImg, anchor.x - 32, anchor.y - 45, 64, 75);
+        ctx.drawImage(lanternImg, anchor.x - 30, anchor.y - 48, 60, 68);
       }
-      // Brilho dourado ambiente suave
-      ctx.fillStyle = 'rgba(251, 191, 36, 0.12)';
+      // Brilho dourado suave emanando da lanterna
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.15)';
       ctx.beginPath();
-      ctx.arc(anchor.x, anchor.y - 5, 32, 0, Math.PI * 2);
+      ctx.arc(anchor.x, anchor.y - 12, 28, 0, Math.PI * 2);
       ctx.fill();
     }
 
@@ -1818,25 +1825,6 @@ class MetroidvaniaWorldGame {
 
       ctx.save();
       ctx.translate(ax, ay);
-
-      // Visual da Âncora
-      if (anchor.type === 'lantern') {
-        ctx.fillStyle = '#ef4444';
-        ctx.beginPath(); ctx.arc(0, 0, 8, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = '#fbbf24';
-        ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.arc(0, 0, 14 + Math.sin(nowTime * 2) * 2, 0, Math.PI * 2); ctx.stroke();
-      } else if (anchor.type === 'ring') {
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.arc(0, 0, 10, 0, Math.PI * 2); ctx.stroke();
-      } else if (anchor.type === 'overhang' || anchor.type === 'cavern') {
-        ctx.fillStyle = '#67e8f9';
-        ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = '#06b6d4';
-        ctx.lineWidth = 1.5;
-        ctx.strokeRect(-8, -8, 16, 16);
-      }
 
       // RETÍCULO DE AUTO-TARGETING COM GLOW
       const isTargeted = this.activeGrappleTarget && this.activeGrappleTarget.id === anchor.id;
@@ -1858,7 +1846,7 @@ class MetroidvaniaWorldGame {
         ctx.moveTo(reticleSize - 8, reticleSize); ctx.lineTo(reticleSize, reticleSize); ctx.lineTo(reticleSize, reticleSize - 8);
         ctx.stroke();
 
-        // Prompt de Tecla [K / F / Click Dir]
+        // Prompt de Tecla [K / F]
         ctx.fillStyle = '#38bdf8';
         ctx.font = 'bold 10px sans-serif';
         ctx.textAlign = 'center';
@@ -1881,7 +1869,6 @@ class MetroidvaniaWorldGame {
       ctx.lineTo(p.grappleTargetPos.x, p.grappleTargetPos.y);
       ctx.stroke();
 
-      // Feixe de energia no centro da corda
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 2;
       ctx.beginPath();
@@ -1922,23 +1909,6 @@ class MetroidvaniaWorldGame {
       } else {
         ctx.font = '34px sans-serif';
         ctx.fillText(npc.portrait, -17, -8);
-      }
-
-      // Balão de Proximidade "💬 [E]"
-      const distToPlayer = Math.hypot(p.x - npc.x, p.y - npc.y);
-      if (distToPlayer < 110) {
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.roundRect(-42, -58, 84, 24, 6);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = '#f8fafc';
-        ctx.font = 'bold 11px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('💬 Falar [E]', 0, -42);
       }
       ctx.restore();
     }
@@ -1991,40 +1961,46 @@ class MetroidvaniaWorldGame {
       ctx.beginPath(); ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2); ctx.fill();
     }
 
-    // 13. Desenho do Jogador com SQUASH & STRETCH
+    // 13. Desenho do Jogador com ALINHAMENTO EXATO DAS PATAS NO CHÃO & SQUASH
     let animKey = p.state;
     if (animKey === 'glide') animKey = 'jump';
     const frames = frameImages[animKey] || frameImages['idle'];
 
     if (frames && frames[p.frameIndex] && frames[p.frameIndex].complete) {
       const frameImg = frames[p.frameIndex];
-      const fw = frameImg.naturalWidth || 140;
-      const fh = frameImg.naturalHeight || 160;
+      const fw = frameImg.naturalWidth || 256;
+      const fh = frameImg.naturalHeight || 256;
       const baseScale = 0.85;
 
       ctx.save();
+      // Pivot exatamente na base dos pés
       ctx.translate(p.x + 35, p.y + 110);
-      // Aplicar direção e Squash & Stretch dinâmico
       ctx.scale(p.facing * (p.scaleX || 1.0), p.scaleY || 1.0);
 
-      // Sombra
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
-      ctx.beginPath(); ctx.ellipse(0, 0, 26, 8, 0, 0, Math.PI * 2); ctx.fill();
+      // Sombra diretamente colada nas patas
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.50)';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 26, 7, 0, 0, Math.PI * 2);
+      ctx.fill();
 
       const dw = fw * baseScale;
       const dh = fh * baseScale;
+      // Alinhamento exato: as patas estão em y=224 no frame de 256px
+      const footAnchorY = dh * (224.0 / 256.0);
 
       // Asas do Planador quando planando
       if (p.isGliding) {
         ctx.strokeStyle = '#f59e0b';
         ctx.lineWidth = 4;
-        ctx.beginPath(); ctx.arc(0, -dh - 12, 38, Math.PI, 0); ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0, -footAnchorY - 10, 38, Math.PI, 0);
+        ctx.stroke();
         ctx.fillStyle = 'rgba(239, 68, 68, 0.65)';
         ctx.fill();
       }
 
       ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(frameImg, -dw / 2, -dh, dw, dh);
+      ctx.drawImage(frameImg, -dw / 2, -footAnchorY, dw, dh);
       ctx.restore();
     }
 
