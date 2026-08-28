@@ -70,8 +70,7 @@ var grapple_cooldown: float = 0.0
 var is_attacking: bool = false
 var attack_timer: float = 0.0
 var current_attack_type: String = "attack"
-var combo_step: int = 0
-@export var attack_duration: float = 0.72
+@export var attack_duration: float = 0.93
 
 # Game Feel: Squash & Stretch & Screen Shake & Look-Ahead
 var base_sprite_scale: Vector2 = Vector2(0.31, 0.31)
@@ -361,26 +360,15 @@ func execute_attack() -> void:
 	is_attacking = true
 	attack_timer = attack_duration
 	current_state = State.ATTACK
+	current_attack_type = "attack"
+	trigger_screen_shake(3.5, 0.12)
 	
-	# Checar Downslash (Ataque para baixo no ar)
-	if not is_on_floor() and Input.is_action_pressed("move_down"):
-		current_attack_type = "downslash"
-		velocity.y = max(velocity.y, 450.0) # Mergulho vertical veloz
-		trigger_screen_shake(4.5, 0.10)
-	elif not is_on_floor():
-		# Micro-Stall Aéreo (Air Hang): amortece a gravidade momentaneamente para precisão
-		current_attack_type = "attack"
-		velocity.y *= 0.40
-		trigger_screen_shake(3.5, 0.08)
-	else:
-		# Combo no chão (Alterna entre corte horizontal e finalizador giratório)
-		combo_step = (combo_step + 1) % 2
-		current_attack_type = "attack_spin" if combo_step == 1 else "attack"
-		trigger_screen_shake(3.5, 0.08)
+	if not is_on_floor():
+		velocity.y *= 0.40 # Micro-stall
 	
 	if attack_area:
 		attack_area.monitoring = true
-		get_tree().create_timer(0.20).timeout.connect(func():
+		get_tree().create_timer(0.35).timeout.connect(func():
 			if attack_area:
 				attack_area.monitoring = false
 		)
@@ -390,15 +378,8 @@ func execute_attack() -> void:
 		var facing_left = sprite.flip_h if sprite else false
 		slash_vfx.visible = true
 		slash_vfx.flip_h = facing_left
-		if current_attack_type == "downslash":
-			slash_vfx.position = Vector2(0, 5)
-			slash_vfx.play("slash_downslash")
-		elif current_attack_type == "attack_spin":
-			slash_vfx.position = Vector2(0, -34)
-			slash_vfx.play("slash_spin")
-		else:
-			slash_vfx.position = Vector2(-28 if facing_left else 28, -34)
-			slash_vfx.play("slash_horizontal")
+		slash_vfx.position = Vector2(-28 if facing_left else 28, -34)
+		slash_vfx.play("slash_horizontal")
 
 func on_landed() -> void:
 	can_double_jump = true
