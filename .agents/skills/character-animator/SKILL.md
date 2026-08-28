@@ -34,10 +34,15 @@ Esta skill governa os padrões de **qualidade visual, fluidez de movimentação,
 5. **Arquitetura Desacoplada: Personagem Puro + Camada de VFX Separada**:
    - **Sprites do Personagem 100% Limpas**: Os frames de combate (`Combo`, `Giro 360°`, `Downslash`) contêm **exclusivamente a anatomia do gato e a lâmina de aço física da katana**, sem efeitos de fogo ou rastros mágicos embutidos no PNG do personagem.
    - **Camada Dedicada de VFX (`assets/vfx/`)**: Efeitos visuais de corte (arcos de aço, giros 360°, ondas de choque e faíscas) residem em spritesheets e nós independentes (`SlashVFX` no Godot 4), permitindo troca dinâmica de elementos (aço, fogo, gelo, eletricidade, corte espiritual), rotação, pós-processamento HDR e escala livre sem distorcer o gato.
-6. **Protocolo Automatizado Anti-Invasão & Zero-Clipping (Obrigatório)**:
-   - **Isolamento por Componente Conectado Principal**: Ao extrair frames de folhas/grades de IA, NUNCA usar fatiamento cego de borda. Deve-se isolar exclusivamente o componente conectado do personagem central (`scipy.ndimage.label`) da respectiva célula, descartando qualquer pixel ou fragmento que pertença a sprites vizinhos (Garantia de **ZERO INVASÃO**).
-   - **Margem de Segurança Automática ($\ge 24\text{ px}$)**: Cada frame em 512x512 deve ter validação estrita de borda ($x_{min} \ge 24$, $x_{max} \le 488$, $y_{min} \ge 24$, $y_{max} \le 488$). Nenhum pixel visível pode tocar os limites do canvas (Garantia de **ZERO CORTE/CLIPPING**).
-   - **Despill Verde Automático**: Redução de excesso de verde em $0.90\times$ no perímetro com interpolação de cor para evitar halos verdes residuais.
+6. **Protocolo Automatizado Anti-Invasão & Zero-Clipping (Abordagem 1 - Tiras Amplas & Pares Duo-Frame)**:
+   - **🥇 Abordagem 1 (Padrão Mandatório de Geração de IA)**:
+     - Em vez de espremer 8 quadros em uma grade apertada 4×2 (onde espadas e caudas colidem), deve-se SEMPRE gerar através de:
+       - **Tiras ultra-largas em formato 21:9 / 16:9** com espaçamento forçado entre personagens (*wide margins*); ou
+       - **Pares de quadros (2 personagens por imagem em 1:1)**, garantindo mais de **500 px de espaço livre ao redor de cada pose**.
+     - **Vantagem Mandatória**: A IA desenha a katana inteira, a ponta da cauda e as mangas compridas com resolução máxima, **zero cortes, zero amputações retas e zero sobreposição com o vizinho**.
+   - **Isolamento por Componente Conectado Principal & Cluster Morfológico**: Ao extrair frames, isolar exclusivamente o cluster unificado do personagem central (`ndimage.binary_dilation` + `ndimage.label`), descartando qualquer fragmento de vizinhos (Garantia de **ZERO INVASÃO**).
+   - **Margem de Segurança Automática ($\ge 20\text{ px}$)**: Cada frame em 512x512 deve residir dentro de $[x \in [20, 492], y \in [20, 492]]$. Nenhum pixel visível pode tocar os limites do canvas (Garantia de **ZERO CORTE/CLIPPING**).
+   - **Despill Verde Automático**: Redução de excesso de verde em $0.90\times$ no perímetro com interpolação de cor para evitar halos verdes residuais (#00FF00).
 
 ---
 
@@ -78,14 +83,14 @@ Esta skill governa os padrões de **qualidade visual, fluidez de movimentação,
 
 **REGRA RIGOROSA**: NENHUM lote de sprites pode ser entregue, comitado ou apresentado ao usuário sem antes ser **auditado e formalmente aprovado por um subagente avaliador especializado**.
 
-### 🔍 Os 9 Critérios Rigorosos de Aceitação (Zero Tolerance):
+### 🔍 Os 10 Critérios Rigorosos de Aceitação (Zero Tolerance):
 
 1. **📐 Resolução & Canvas Padronizado (512x512 px)**:
    - 100% dos frames devem ser PNGs $RGBA$ na dimensão exata de $512 \times 512\text{ px}$.
 2. **✂️ Zero Clipping (Margem de Segurança $\ge 20\text{ px}$)**:
    - O conteúdo visível deve residir estritamente dentro de $[x \in [20, 492], y \in [20, 492]]$. Nenhum pixel com $\alpha > 15$ pode tocar a borda $[0, 511]$.
 3. **🚫 Zero Invasão de Vizinhos (*Zero Neighbor Intrusion*)**:
-   - Isolamento topológico estrito por componentes conectados (`scipy.ndimage.label`). Proibido qualquer fragmento ou pixel de personagens vizinhos da folha de IA.
+   - Isolamento topológico estrito por componentes conectados e cluster morfológico. Proibido qualquer fragmento ou pixel de personagens vizinhos da folha de IA.
 4. **🐾 Escala Anatômica 1:1 Invariável (~218 px)**:
    - A altura corporal do gatinho (patas à cabeça em repouso) deve medir rigorosamente **~218 px ($\pm 5\text{ px}$)**, idêntica ao `Idle` e `Run`.
 5. **⚓ Linha de Base do Solo (*Ground Baseline* $y = 430\text{ px}$)**:
@@ -94,15 +99,30 @@ Esta skill governa os padrões de **qualidade visual, fluidez de movimentação,
    - Zero halos ou linhas verdes residuais nas bordas ($G > 1.3 \times \max(R, B)$ com $\alpha > 50$).
 7. **⚔️ Arquitetura Desacoplada (Personagem Puro)**:
    - Sprites do personagem devem conter **exclusivamente o corpo e a katana física de aço**. Efeitos de fogo, arcos de corte e magia residem separadamente em `assets/vfx/`.
-8. **🔄 Continuidade de Animação (12 Princípios & 8 Frames)**:
+8. **🗡️ Integridade Total de Lâminas e Cauda (Zero Truncation / No Flat Amputations)**:
+   - Proibido qualquer corte reto de lâmina de katana, ponta de cauda ou bainha. Todas as armas devem possuir sua lâmina de aço afiada inteira com ponta cônica visível e sem amputação por borda de célula.
+9. **🔄 Continuidade de Animação (12 Princípios Clássicos)**:
    - Vetor de movimento cronológico ininterrupto (Antecipação $\rightarrow$ Saque $\rightarrow$ Extensão Máxima $\rightarrow$ Follow-Through $\rightarrow$ Guarda).
-9. **📦 Sincronização Atômica das 4 Pastas & Godot 4 Engine**:
-   - Validação da existência e integridade de:
-     1. `assets/frames/<animacao>/` (PNGs isolados)
-     2. `assets/spritesheets/` (Tiras horizontais + `cat_warrior_atlas.json`)
-     3. `assets/previews/` (GIFs animados + `showcase_combat.gif`)
-     4. `scenes/player/player_sprite_frames.tres` (Configurado e funcional no Godot 4)
-     5. `scenes/vfx/slash_vfx.tres` (Biblioteca de efeitos de corte)
+10. **📦 Sincronização Atômica das 4 Pastas & Godot 4 Engine**:
+    - Validação da existência e integridade de:
+      1. `assets/frames/<animacao>/` (PNGs isolados)
+      2. `assets/spritesheets/` (Tiras horizontais + `cat_warrior_atlas.json`)
+      3. `assets/previews/` (GIFs animados + `showcase_combat.gif`)
+      4. `scenes/player/player_sprite_frames.tres` (Configurado e funcional no Godot 4)
+      5. `scenes/vfx/slash_vfx.tres` (Biblioteca de efeitos de corte)
+
+---
+
+### 🤖 Como Invocar e Executar o Subagente Avaliador:
+
+O agente principal deve rodar o script de auditoria automatizado:
+```bash
+python .agents/skills/character-animator/scripts/audit_sprites.py
+```
+
+**Protocolo de Auto-Refinamento**:
+- Se o script retornar `Exit Code 1` ou apontar qualquer falha: A entrega é **AUTOMATICAMENTE REJEITADA**.
+- O agente deve corrigir os frames defeituosos imediatamente e re-executar a auditoria até atingir **100% de Aprovação (Exit Code 0)** antes de notificar o usuário ou commitar.
 
 ---
 
