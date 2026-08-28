@@ -378,8 +378,9 @@ func execute_attack() -> void:
 		var facing_left = sprite.flip_h if sprite else false
 		slash_vfx.visible = true
 		slash_vfx.flip_h = facing_left
-		slash_vfx.position = Vector2(-28 if facing_left else 28, -34)
-		slash_vfx.play("slash_horizontal")
+		slash_vfx.position = Vector2(0, -54)
+		slash_vfx.scale = Vector2(0.31, 0.31)
+		slash_vfx.play("slash_rising")
 
 func on_landed() -> void:
 	can_double_jump = true

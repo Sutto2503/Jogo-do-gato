@@ -710,6 +710,13 @@
         <input type="range" id="onion-opacity" min="0.1" max="0.8" step="0.05" value="0.35" style="width: 60px;" title="Opacidade do Onion Skin">
       </div>
 
+      <!-- VFX Overlay Toggle -->
+      <div class="toolbar-group">
+        <button id="btn-vfx-toggle" class="btn active" title="Ativar/Desativar VFX Overlay (Tecla V)">
+          ✨ VFX Slash
+        </button>
+      </div>
+
       <!-- Background Switcher -->
       <div class="toolbar-group">
         <span class="toolbar-label">Fundo:</span>
@@ -997,6 +1004,9 @@
       onionMode: 'both', // 'both', 'prev', 'next'
       onionOpacity: 0.35,
 
+      // VFX Overlay
+      vfxOverlay: true,
+
       // Guides
       showBaseline: true,
       showSafeBounds: true,
@@ -1048,6 +1058,7 @@
     const btnGuideBounds = document.getElementById('btn-guide-bounds');
     const btnGuideCross = document.getElementById('btn-guide-cross');
     const btnOnionToggle = document.getElementById('btn-onion-toggle');
+    const btnVfxToggle = document.getElementById('btn-vfx-toggle');
     const onionOpacityInput = document.getElementById('onion-opacity');
     const onionModeBtns = document.querySelectorAll('#onion-mode-group .btn');
     const speedBtns = document.querySelectorAll('#speed-btn-group .btn');
@@ -1138,6 +1149,9 @@
       anims.forEach(animKey => {
         preloadAnimationImages(charKey, animKey);
       });
+      if (charKey === 'cat_samurai') {
+        preloadAnimationImages('cat_samurai', 'vfx_slash_rising');
+      }
     }
 
     /* ==========================================================================
@@ -1336,6 +1350,16 @@
       // --- MAIN CURRENT FRAME ---
       if (frames && frames[state.currentFrame] && frames[state.currentFrame].complete) {
         ctx.drawImage(frames[state.currentFrame], 0, 0, 512, 512);
+        
+        // --- VFX OVERLAY (RISING SLASH) ---
+        if (state.vfxOverlay && (state.animKey === 'attack_slash' || state.animKey === 'attack')) {
+          if (state.imageCache['cat_samurai'] && state.imageCache['cat_samurai']['vfx_slash_rising']) {
+            const vfxFrames = state.imageCache['cat_samurai']['vfx_slash_rising'];
+            if (vfxFrames && vfxFrames[state.currentFrame] && vfxFrames[state.currentFrame].complete) {
+              ctx.drawImage(vfxFrames[state.currentFrame], 0, 0, 512, 512);
+            }
+          }
+        }
       } else {
         // Loading placeholder
         ctx.fillStyle = '#ff4757';
@@ -1556,6 +1580,13 @@
         renderStage();
       });
 
+      // VFX Overlay Toggle
+      btnVfxToggle.addEventListener('click', () => {
+        state.vfxOverlay = !state.vfxOverlay;
+        btnVfxToggle.classList.toggle('active', state.vfxOverlay);
+        renderStage();
+      });
+
       onionModeBtns.forEach(btn => {
         btn.addEventListener('click', () => {
           onionModeBtns.forEach(b => b.classList.remove('active'));
@@ -1704,6 +1735,11 @@
           case 'KeyO':
             state.onionSkin = !state.onionSkin;
             btnOnionToggle.classList.toggle('active', state.onionSkin);
+            renderStage();
+            break;
+          case 'KeyV':
+            state.vfxOverlay = !state.vfxOverlay;
+            btnVfxToggle.classList.toggle('active', state.vfxOverlay);
             renderStage();
             break;
           case 'KeyG':

@@ -1,78 +1,50 @@
-[gd_resource type="SpriteFrames" load_steps=13 format=3 uid="uid://vfxslash12345"]
+[gd_resource type="SpriteFrames" load_steps=6 format=3 uid="uid://vfxslash12345"]
 
-[ext_resource type="Texture2D" path="res://assets/vfx/slashes/vfx_slash_horizontal_0.png" id="1_slash_horizontal_vfx_slash_horizontal_0"]
-[ext_resource type="Texture2D" path="res://assets/vfx/slashes/vfx_slash_horizontal_1.png" id="2_slash_horizontal_vfx_slash_horizontal_1"]
-[ext_resource type="Texture2D" path="res://assets/vfx/slashes/vfx_slash_horizontal_2.png" id="3_slash_horizontal_vfx_slash_horizontal_2"]
-[ext_resource type="Texture2D" path="res://assets/vfx/slashes/vfx_slash_horizontal_3.png" id="4_slash_horizontal_vfx_slash_horizontal_3"]
-[ext_resource type="Texture2D" path="res://assets/vfx/slashes/vfx_slash_spin_0.png" id="5_slash_spin_vfx_slash_spin_0"]
-[ext_resource type="Texture2D" path="res://assets/vfx/slashes/vfx_slash_spin_1.png" id="6_slash_spin_vfx_slash_spin_1"]
-[ext_resource type="Texture2D" path="res://assets/vfx/slashes/vfx_slash_spin_2.png" id="7_slash_spin_vfx_slash_spin_2"]
-[ext_resource type="Texture2D" path="res://assets/vfx/slashes/vfx_slash_spin_3.png" id="8_slash_spin_vfx_slash_spin_3"]
-[ext_resource type="Texture2D" path="res://assets/vfx/slashes/vfx_downslash_0.png" id="9_slash_downslash_vfx_downslash_0"]
-[ext_resource type="Texture2D" path="res://assets/vfx/slashes/vfx_downslash_1.png" id="10_slash_downslash_vfx_downslash_1"]
-[ext_resource type="Texture2D" path="res://assets/vfx/slashes/vfx_downslash_2.png" id="11_slash_downslash_vfx_downslash_2"]
-[ext_resource type="Texture2D" path="res://assets/vfx/slashes/vfx_downslash_3.png" id="12_slash_downslash_vfx_downslash_3"]
+[ext_resource type="Texture2D" path="res://assets/vfx/slashes/vfx_slash_rising_0.png" id="1_vfx_slash_rising_0"]
+[ext_resource type="Texture2D" path="res://assets/vfx/slashes/vfx_slash_rising_1.png" id="2_vfx_slash_rising_1"]
+[ext_resource type="Texture2D" path="res://assets/vfx/slashes/vfx_slash_rising_2.png" id="3_vfx_slash_rising_2"]
+[ext_resource type="Texture2D" path="res://assets/vfx/slashes/vfx_slash_rising_3.png" id="4_vfx_slash_rising_3"]
 
 [resource]
 animations = [
 {
 "frames": [
 {
-"duration": 1.0,
-"texture": ExtResource("1_slash_horizontal_vfx_slash_horizontal_0")
+"duration": 1.5,
+"texture": ExtResource("1_vfx_slash_rising_0")
 }, {
-"duration": 1.0,
-"texture": ExtResource("2_slash_horizontal_vfx_slash_horizontal_1")
+"duration": 1.5,
+"texture": ExtResource("2_vfx_slash_rising_1")
 }, {
-"duration": 1.0,
-"texture": ExtResource("3_slash_horizontal_vfx_slash_horizontal_2")
+"duration": 3.9,
+"texture": ExtResource("3_vfx_slash_rising_2")
 }, {
-"duration": 1.0,
-"texture": ExtResource("4_slash_horizontal_vfx_slash_horizontal_3")
+"duration": 1.95,
+"texture": ExtResource("4_vfx_slash_rising_3")
+}
+],
+"loop": false,
+"name": &"slash_rising",
+"speed": 8.0
+},
+{
+"frames": [
+{
+"duration": 1.5,
+"texture": ExtResource("1_vfx_slash_rising_0")
+}, {
+"duration": 1.5,
+"texture": ExtResource("2_vfx_slash_rising_1")
+}, {
+"duration": 3.9,
+"texture": ExtResource("3_vfx_slash_rising_2")
+}, {
+"duration": 1.95,
+"texture": ExtResource("4_vfx_slash_rising_3")
 }
 ],
 "loop": false,
 "name": &"slash_horizontal",
-"speed": 16.0
-},
-{
-"frames": [
-{
-"duration": 1.0,
-"texture": ExtResource("5_slash_spin_vfx_slash_spin_0")
-}, {
-"duration": 1.0,
-"texture": ExtResource("6_slash_spin_vfx_slash_spin_1")
-}, {
-"duration": 1.0,
-"texture": ExtResource("7_slash_spin_vfx_slash_spin_2")
-}, {
-"duration": 1.0,
-"texture": ExtResource("8_slash_spin_vfx_slash_spin_3")
-}
-],
-"loop": false,
-"name": &"slash_spin",
-"speed": 16.0
-},
-{
-"frames": [
-{
-"duration": 1.0,
-"texture": ExtResource("9_slash_downslash_vfx_downslash_0")
-}, {
-"duration": 1.0,
-"texture": ExtResource("10_slash_downslash_vfx_downslash_1")
-}, {
-"duration": 1.0,
-"texture": ExtResource("11_slash_downslash_vfx_downslash_2")
-}, {
-"duration": 1.0,
-"texture": ExtResource("12_slash_downslash_vfx_downslash_3")
-}
-],
-"loop": false,
-"name": &"slash_downslash",
-"speed": 16.0
+"speed": 8.0
 }
 ]
