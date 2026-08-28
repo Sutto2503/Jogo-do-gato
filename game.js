@@ -366,6 +366,7 @@ const frameImages = {};
 const envImages = {};
 const npcImages = {};
 const enemyImages = {};
+const vfxImages = {};
 let assetsReady = false;
 
 function initAssets(callback) {
@@ -381,7 +382,16 @@ function initAssets(callback) {
             frameImages[key].push(img);
           });
         } else if (typeof item === 'object' && item !== null) {
-          if (key === 'environment') {
+          if (key === 'vfx') {
+            Object.keys(item).forEach(vKey => {
+              vfxImages[vKey] = [];
+              item[vKey].forEach(src => {
+                const img = new Image();
+                img.src = src;
+                vfxImages[vKey].push(img);
+              });
+            });
+          } else if (key === 'environment') {
             Object.keys(item).forEach(k => {
               const img = new Image();
               img.src = item[k];
@@ -1245,6 +1255,7 @@ class MetroidvaniaWorldGame {
         y: p.isDownslashing ? p.y + 90 : p.y + 40,
         facing: p.facing,
         isDown: p.isDownslashing,
+        isSpin: p.attackType === 'attack_spin',
         reach: reachMultiplier,
         life: 14,
         maxLife: 14
@@ -2145,21 +2156,37 @@ class MetroidvaniaWorldGame {
       ctx.restore();
     }
 
-    // 14. Rastro de Corte da Katana
+    // 14. Efeitos Visuais de Corte de Katana Desacoplados (VFX Layer)
     for (const sl of this.slashes) {
       ctx.save();
       ctx.translate(sl.x, sl.y);
       ctx.scale(sl.facing, 1);
-      const reach = sl.reach || 1.0;
-      ctx.strokeStyle = `rgba(239, 68, 68, ${sl.life / sl.maxLife})`;
-      ctx.lineWidth = 7 * reach;
-      ctx.beginPath();
-      if (sl.isDown) {
-        ctx.arc(0, 0, 45 * reach, 0.2 * Math.PI, 0.8 * Math.PI);
+      
+      const vfxKey = sl.isDown ? 'downslash' : (sl.isSpin ? 'slash_spin' : 'slash_horizontal');
+      const vfxList = vfxImages[vfxKey] || [];
+      const vfxIdx = Math.min(vfxList.length - 1, Math.floor((1.0 - sl.life / sl.maxLife) * vfxList.length));
+      
+      if (vfxList.length > 0 && vfxList[vfxIdx] && vfxList[vfxIdx].complete) {
+        ctx.globalCompositeOperation = 'lighter';
+        const vImg = vfxList[vfxIdx];
+        const vScale = 0.55 * (sl.reach || 1.0);
+        const vw = vImg.naturalWidth * vScale;
+        const vh = vImg.naturalHeight * vScale;
+        ctx.drawImage(vImg, -vw / 2, -vh / 2, vw, vh);
+        ctx.globalCompositeOperation = 'source-over';
       } else {
-        ctx.arc(0, 0, 45 * reach, -0.6 * Math.PI, 0.4 * Math.PI);
+        // Fallback corte de aço prateado
+        const reach = sl.reach || 1.0;
+        ctx.strokeStyle = `rgba(224, 242, 254, ${sl.life / sl.maxLife})`;
+        ctx.lineWidth = 5 * reach;
+        ctx.beginPath();
+        if (sl.isDown) {
+          ctx.arc(0, 0, 50 * reach, 0.2 * Math.PI, 0.8 * Math.PI);
+        } else {
+          ctx.arc(0, 0, 50 * reach, -0.6 * Math.PI, 0.4 * Math.PI);
+        }
+        ctx.stroke();
       }
-      ctx.stroke();
       ctx.restore();
     }
 

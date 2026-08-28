@@ -1,61 +1,60 @@
-[gd_scene load_steps=6 format=3 uid="uid://ctestground888"]
+[gd_scene format=3 uid="uid://cdtohjhb7w0lf"]
 
-[ext_resource type="Script" path="res://scenes/levels/test_ground_level.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://bukdrgyx6s4lq" path="res://scenes/levels/test_ground_level.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://b7vplayer678" path="res://scenes/player/player.tscn" id="2_player"]
-[ext_resource type="Texture2D" uid="uid://cgroundstrip11" path="res://assets/environment/ground_strip.png" id="3_groundart"]
-[ext_resource type="Texture2D" uid="uid://clanternprop22" path="res://assets/environment/props/stone_lantern.png" id="4_lantern"]
+[ext_resource type="Texture2D" uid="uid://fix1c3pf3jx5" path="res://assets/environment/ground_strip.png" id="3_groundart"]
+[ext_resource type="Texture2D" uid="uid://cty22txguvbw7" path="res://assets/environment/props/stone_lantern.png" id="4_lantern"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_straight_ground"]
 size = Vector2(3640, 110)
 
-[node name="TestGroundLevel" type="Node2D"]
+[node name="TestGroundLevel" type="Node2D" unique_id=1551433893]
 script = ExtResource("1_script")
 
-[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+[node name="ParallaxBackground" type="ParallaxBackground" parent="." unique_id=42615968]
 
-[node name="SkyLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+[node name="SkyLayer" type="ParallaxLayer" parent="ParallaxBackground" unique_id=2076568802]
 motion_scale = Vector2(0.1, 0.1)
 
-[node name="SkyBackdrop" type="ColorRect" parent="ParallaxBackground/SkyLayer"]
-offset_left = -2000.0
-offset_top = -1000.0
-offset_right = 6000.0
-offset_bottom = 2500.0
+[node name="SkyBackdrop" type="ColorRect" parent="ParallaxBackground/SkyLayer" unique_id=1339454137]
+offset_left = -2060.0
+offset_top = -1241.0
+offset_right = 5940.0
+offset_bottom = 2259.0
 color = Color(0.08, 0.11, 0.18, 1)
 
-[node name="GroundStrip1" type="Sprite2D" parent="."]
+[node name="GroundStrip1" type="Sprite2D" parent="." unique_id=2056092015]
 position = Vector2(455, 673)
 texture = ExtResource("3_groundart")
 
-[node name="GroundStrip2" type="Sprite2D" parent="."]
+[node name="GroundStrip2" type="Sprite2D" parent="." unique_id=1884896830]
 position = Vector2(1365, 673)
 texture = ExtResource("3_groundart")
 
-[node name="GroundStrip3" type="Sprite2D" parent="."]
+[node name="GroundStrip3" type="Sprite2D" parent="." unique_id=28717590]
 position = Vector2(2275, 673)
 texture = ExtResource("3_groundart")
 
-[node name="GroundStrip4" type="Sprite2D" parent="."]
+[node name="GroundStrip4" type="Sprite2D" parent="." unique_id=1166777432]
 position = Vector2(3185, 673)
 texture = ExtResource("3_groundart")
 
-[node name="Lantern1" type="Sprite2D" parent="."]
+[node name="Lantern1" type="Sprite2D" parent="." unique_id=374745357]
 position = Vector2(300, 606)
 scale = Vector2(0.8, 0.8)
 texture = ExtResource("4_lantern")
 
-[node name="Lantern2" type="Sprite2D" parent="."]
+[node name="Lantern2" type="Sprite2D" parent="." unique_id=1426477918]
 position = Vector2(1800, 606)
 scale = Vector2(0.8, 0.8)
 texture = ExtResource("4_lantern")
 
-[node name="StraightGroundCollision" type="StaticBody2D" parent="."]
+[node name="StraightGroundCollision" type="StaticBody2D" parent="." unique_id=327293492]
 position = Vector2(1820, 693)
-collision_layer = 1
 collision_mask = 2
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="StraightGroundCollision"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StraightGroundCollision" unique_id=1922852561]
 shape = SubResource("RectangleShape2D_straight_ground")
 
-[node name="Player" parent="." instance=ExtResource("2_player")]
+[node name="Player" parent="." unique_id=9574565 instance=ExtResource("2_player")]
 position = Vector2(400, 638)

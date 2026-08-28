@@ -84,6 +84,7 @@ var screen_shake_timer: float = 0.0
 @onready var grapple_ray: RayCast2D = $GrappleRayCast
 @onready var grapple_line: Line2D = $GrappleLine
 @onready var attack_area: Area2D = $AttackArea2D
+@onready var slash_vfx: AnimatedSprite2D = $SlashVFX
 @onready var dust_particles: CPUParticles2D = $DustParticles
 @onready var camera: Camera2D = $Camera2D
 
@@ -91,6 +92,12 @@ func _ready() -> void:
 	if grapple_line:
 		grapple_line.visible = false
 		grapple_line.top_level = true
+	if slash_vfx:
+		slash_vfx.visible = false
+		slash_vfx.animation_finished.connect(func():
+			if slash_vfx:
+				slash_vfx.visible = false
+		)
 
 func _physics_process(delta: float) -> void:
 	# Atualizar temporizadores
@@ -377,6 +384,21 @@ func execute_attack() -> void:
 			if attack_area:
 				attack_area.monitoring = false
 		)
+		
+	# Disparar Efeito Visual Desacoplado (VFX)
+	if slash_vfx:
+		var facing_left = sprite.flip_h if sprite else false
+		slash_vfx.visible = true
+		slash_vfx.flip_h = facing_left
+		if current_attack_type == "downslash":
+			slash_vfx.position = Vector2(0, 5)
+			slash_vfx.play("slash_downslash")
+		elif current_attack_type == "attack_spin":
+			slash_vfx.position = Vector2(0, -34)
+			slash_vfx.play("slash_spin")
+		else:
+			slash_vfx.position = Vector2(-28 if facing_left else 28, -34)
+			slash_vfx.play("slash_horizontal")
 
 func on_landed() -> void:
 	can_double_jump = true
