@@ -71,7 +71,7 @@ var is_attacking: bool = false
 var attack_timer: float = 0.0
 var current_attack_type: String = "attack"
 var combo_step: int = 0
-@export var attack_duration: float = 0.30
+@export var attack_duration: float = 0.72
 
 # Game Feel: Squash & Stretch & Screen Shake & Look-Ahead
 var base_sprite_scale: Vector2 = Vector2(0.18, 0.18)

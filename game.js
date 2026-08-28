@@ -483,20 +483,20 @@ class StudioAnimator {
     this.currentAnim = animKey;
     this.currentFrame = 0;
     const fpsMap = {
-      idle: 5,
-      walk: 8,
-      run: 11,
-      jump: 8,
-      glide: 6,
-      attack: 14,
-      attack_combo: 14,
-      attack_spin: 14,
-      attack_downslash: 16,
-      skid: 10,
-      slide: 10,
-      turn: 10
+      idle: 4,
+      walk: 6,
+      run: 8,
+      jump: 6,
+      glide: 5,
+      attack: 11,
+      attack_combo: 11,
+      attack_spin: 11,
+      attack_downslash: 12,
+      skid: 8,
+      slide: 8,
+      turn: 8
     };
-    this.fps = fpsMap[animKey] || 10;
+    this.fps = fpsMap[animKey] || 8;
 
     const titleEl = document.getElementById('current-anim-name');
     if (titleEl) titleEl.textContent = animKey.toUpperCase();
@@ -1762,12 +1762,13 @@ class MetroidvaniaWorldGame {
     }
     if (promptEl) promptEl.classList.toggle('show', nearTarget);
 
-    // Animações do Jogador
+    // Animações do Jogador (Velocidade Suave e Legível)
     if (p.isAttacking) {
       p.state = p.attackType || 'attack_combo';
       p.attackTimer++;
       const curFrames = frameImages[p.state] || frameImages['attack_combo'] || [];
-      p.frameIndex = Math.floor(p.attackTimer / 4);
+      // ~11 FPS (5.5 ticks por frame a 60Hz)
+      p.frameIndex = Math.floor(p.attackTimer / 5.5);
       if (p.frameIndex >= curFrames.length) {
         p.isAttacking = false;
         p.isDownslashing = false;
@@ -1778,7 +1779,8 @@ class MetroidvaniaWorldGame {
       p.state = 'glide';
       p.glideAnimTimer = (p.glideAnimTimer || 0) + 1;
       const glideList = frameImages['glide'] || [];
-      p.frameIndex = glideList.length > 0 ? Math.floor(p.glideAnimTimer / 10) % glideList.length : 0;
+      // ~5 FPS (12 ticks por frame)
+      p.frameIndex = glideList.length > 0 ? Math.floor(p.glideAnimTimer / 12) % glideList.length : 0;
     } else if (!p.isGrounded) {
       p.state = 'jump';
       p.glideAnimTimer = 0;
@@ -1788,8 +1790,9 @@ class MetroidvaniaWorldGame {
       p.animTime += 1;
       const count = (frameImages['run'] || []).length;
       if (count > 0) {
-        p.frameIndex = Math.floor(p.animTime / 6) % count;
-        if (p.animTime % 12 === 0) sfx.playStep();
+        // ~8 FPS (7.5 ticks por frame)
+        p.frameIndex = Math.floor(p.animTime / 7.5) % count;
+        if (p.animTime % 15 === 0) sfx.playStep();
       }
     } else {
       p.state = 'idle';
