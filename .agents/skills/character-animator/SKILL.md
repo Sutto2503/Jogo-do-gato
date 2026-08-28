@@ -34,6 +34,10 @@ Esta skill governa os padrões de **qualidade visual, fluidez de movimentação,
 5. **Arquitetura Desacoplada: Personagem Puro + Camada de VFX Separada**:
    - **Sprites do Personagem 100% Limpas**: Os frames de combate (`Combo`, `Giro 360°`, `Downslash`) contêm **exclusivamente a anatomia do gato e a lâmina de aço física da katana**, sem efeitos de fogo ou rastros mágicos embutidos no PNG do personagem.
    - **Camada Dedicada de VFX (`assets/vfx/`)**: Efeitos visuais de corte (arcos de aço, giros 360°, ondas de choque e faíscas) residem em spritesheets e nós independentes (`SlashVFX` no Godot 4), permitindo troca dinâmica de elementos (aço, fogo, gelo, eletricidade, corte espiritual), rotação, pós-processamento HDR e escala livre sem distorcer o gato.
+6. **Protocolo Automatizado Anti-Invasão & Zero-Clipping (Obrigatório)**:
+   - **Isolamento por Componente Conectado Principal**: Ao extrair frames de folhas/grades de IA, NUNCA usar fatiamento cego de borda. Deve-se isolar exclusivamente o componente conectado do personagem central (`scipy.ndimage.label`) da respectiva célula, descartando qualquer pixel ou fragmento que pertença a sprites vizinhos (Garantia de **ZERO INVASÃO**).
+   - **Margem de Segurança Automática ($\ge 24\text{ px}$)**: Cada frame em 512x512 deve ter validação estrita de borda ($x_{min} \ge 24$, $x_{max} \le 488$, $y_{min} \ge 24$, $y_{max} \le 488$). Nenhum pixel visível pode tocar os limites do canvas (Garantia de **ZERO CORTE/CLIPPING**).
+   - **Despill Verde Automático**: Redução de excesso de verde em $0.90\times$ no perímetro com interpolação de cor para evitar halos verdes residuais.
 
 ---
 
