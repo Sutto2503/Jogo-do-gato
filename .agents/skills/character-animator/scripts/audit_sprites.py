@@ -23,7 +23,7 @@ ANIMATIONS = {
     "jump": { "type": "air", "frames": 5, "fps": 6.0, "strip_name": "cat_warrior_jump.png" },
     "glide": { "type": "air", "frames": 6, "fps": 5.0, "strip_name": "cat_warrior_glide.png" },
     "attack_thrust": { "type": "ground", "frames": 6, "fps": 12.0, "strip_name": "cat_warrior_attack_thrust.png" },
-    "attack_slash": { "type": "ground", "frames": 6, "fps": 12.0, "strip_name": "cat_warrior_attack_slash.png" },
+    "attack_slash": { "type": "ground", "frames": 4, "fps": 10.0, "strip_name": "cat_warrior_attack_slash.png" },
     "attack_combo": { "type": "ground", "frames": 8, "fps": 11.0, "strip_name": "cat_warrior_attack_combo.png" },
     "attack_spin": { "type": "spin", "frames": 8, "fps": 11.0, "strip_name": "cat_warrior_attack_spin.png" },
     "attack_downslash": { "type": "downslash", "frames": 8, "fps": 12.0, "strip_name": "cat_warrior_attack_downslash.png" },
