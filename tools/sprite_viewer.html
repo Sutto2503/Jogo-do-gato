@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gatinho Samurai - Interactive Sprite Review Tool</title>
+  <style>
+    :root {
+      --bg-dark: #0f111a;
+      --bg-panel: #181b28;
+      --bg-card: #212538;
+      --bg-hover: #2d334d;
+      --accent: #ff4757;
+      --accent-glow: rgba(255, 71, 87, 0.35);
+      --accent-cyan: #00d2d3;
+      --accent-green: #2ed573;
+      --accent-yellow: #ffa502;
+      --text-main: #f1f2f6;
+      --text-muted: #8e94a8;
+      --border-color: #2f354a;
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+    }
+
+    /* Layout Structure */
+    #sidebar {
+      width: 290px;
+      min-width: 290px;
+      background-color: var(--bg-panel);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      z-index: 10;
+    }
+
+    #main-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Header */
+    .sidebar-header {
+      padding: 16px;
+      background: linear-gradient(180deg, #22273d 0%, var(--bg-panel) 100%);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .title-icon {
+      font-size: 24px;
+      filter: drop-shadow(0 0 8px rgba(255, 71, 87, 0.6));
+    }
+
+    h1 {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #fff;
+    }
+
+    .subtitle {
+      font-size: 11px;
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 2px;
+    }
+
+    .char-select-wrap {
+      margin-top: 12px;
+    }
+
+    .char-select-wrap label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .select-input {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 8px 10px;
+      border-radius: var(--radius);
+      outline: none;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .select-input:hover, .select-input:focus {
+      border-color: var(--accent);
+    }
+
+    /* Animation List */
+    .anim-section {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+    }
+
+    .section-title {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .anim-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .anim-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 12px;
+      background: var(--bg-card);
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+    }
+
+    .anim-item:hover {
+      background: var(--bg-hover);
+      border-color: #3b4260;
+      transform: translateX(2px);
+    }
+
+    .anim-item.active {
+      background: linear-gradient(90deg, rgba(255,71,87,0.2) 0%, rgba(255,71,87,0.05) 100%);
+      border-color: var(--accent);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    .anim-name {
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .anim-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      background: #151824;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      font-family: monospace;
+    }
+
+    .anim-item.active .anim-badge {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    /* Sidebar Footer Metrics */
+    .sidebar-footer {
+      padding: 12px;
+      background: #141724;
+      border-top: 1px solid var(--border-color);
+      font-size: 11px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .metric-box {
+      background: var(--bg-card);
+      padding: 6px 8px;
+      border-radius: 4px;
+      border: 1px solid #282e42;
+    }
+
+    .metric-box .label {
+      color: var(--text-muted);
+      font-size: 9px;
+      text-transform: uppercase;
+    }
+
+    .metric-box .val {
+      font-weight: 700;
+      color: var(--accent-cyan);
+      font-size: 12px;
+      font-family: monospace;
+    }
+
+    /* Top Control Bar */
+    #top-bar {
+      height: 54px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      gap: 16px;
+      z-index: 5;
+    }
+
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toolbar-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Buttons */
+    .btn {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: var(--radius);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .btn:hover {
+      background: var(--bg-hover);
+      border-color: #404968;
+      color: #fff;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .btn-icon {
+      padding: 6px 10px;
+      font-size: 14px;
+    }
+
+    .btn-group {
+      display: inline-flex;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-group .btn {
+      border: none;
+      border-radius: 0;
+      border-right: 1px solid var(--border-color);
+    }
+
+    .btn-group .btn:last-child {
+      border-right: none;
+    }
+
+    /* Background Selector Badges */
+    .bg-badge {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+
+    .bg-badge:hover {
+      transform: scale(1.15);
+    }
+
+    .bg-badge.active {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 8px rgba(0, 210, 211, 0.6);
+    }
+
+    .bg-checker {
+      background-image: linear-gradient(45deg, #2a2a2a 25%, transparent 25%),
+                        linear-gradient(-45deg, #2a2a2a 25%, transparent 25%),
+                        linear-gradient(45deg, transparent 75%, #2a2a2a 75%),
+                        linear-gradient(-45deg, transparent 75%, #2a2a2a 75%);
+      background-size: 8px 8px;
+      background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+      background-color: #1a1a1a;
+    }
+
+    .bg-dark-color { background-color: #121212; border: 1px solid #333; }
+    .bg-light-color { background-color: #ffffff; }
+    .bg-green-color { background-color: #00FF00; }
+
+    /* Canvas Stage Area */
+    #stage-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #12141f;
+    }
+
+    #viewport {
+      position: absolute;
+      cursor: grab;
+    }
+
+    #viewport:active {
+      cursor: grabbing;
+    }
+
+    #sprite-canvas {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+      border-radius: 4px;
+      transition: box-shadow 0.2s;
+    }
+
+    /* HUD Info Overlay */
+    .hud-overlay {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: rgba(15, 17, 26, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      pointer-events: none;
+      font-size: 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 10;
+    }
+
+    .hud-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .hud-label {
+      color: var(--text-muted);
+      min-width: 65px;
+    }
+
+    .hud-val {
+      font-weight: 700;
+      color: #fff;
+      font-family: monospace;
+    }
+
+    /* Zoom Controls Floating Widget */
+    .zoom-widget {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: rgba(15, 17, 26, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 6px;
+      display: flex;
+      gap: 4px;
+      z-index: 10;
+    }
+
+    /* QA Legend Float */
+    .qa-legend {
+      position: absolute;
+      bottom: 14px;
+      left: 14px;
+      background: rgba(15, 17, 26, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 8px 12px;
+      font-size: 10px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+    }
+
+    .legend-color {
+      width: 12px;
+      height: 3px;
+      border-radius: 2px;
+    }
+
+    /* Bottom Scrubber & Transport Bar */
+    #bottom-bar {
+      background: var(--bg-panel);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      z-index: 10;
+    }
+
+    .transport-row {
+      height: 52px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .transport-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-play {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 0 12px var(--accent-glow);
+      transition: all 0.15s;
+    }
+
+    .btn-play:hover {
+      transform: scale(1.08);
+      background: #ff6b81;
+    }
+
+    .scrubber-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      max-width: 550px;
+    }
+
+    .scrubber-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      background: var(--bg-card);
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+    }
+
+    .scrubber-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent-cyan);
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(0, 210, 211, 0.8);
+      border: 2px solid #fff;
+      transition: transform 0.1s;
+    }
+
+    .scrubber-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .frame-indicator {
+      font-family: monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      min-width: 80px;
+      text-align: center;
+      background: var(--bg-card);
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+    }
+
+    /* Filmstrip Gallery */
+    .filmstrip-row {
+      height: 78px;
+      background: #11131c;
+      border-top: 1px solid #232738;
+      padding: 6px 16px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      align-items: center;
+    }
+
+    .filmstrip-thumb {
+      height: 64px;
+      width: 64px;
+      min-width: 64px;
+      background: #1b1e2e;
+      border: 2px solid var(--border-color);
+      border-radius: 6px;
+      cursor: pointer;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      transition: all 0.15s;
+    }
+
+    .filmstrip-thumb:hover {
+      border-color: var(--accent-cyan);
+      transform: translateY(-2px);
+    }
+
+    .filmstrip-thumb.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 10px var(--accent-glow);
+      background: #252a42;
+    }
+
+    .filmstrip-thumb canvas, .filmstrip-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+
+    .thumb-num {
+      position: absolute;
+      bottom: 2px;
+      right: 4px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #fff;
+      font-size: 9px;
+      font-family: monospace;
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-panel);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2e344d;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3e4668;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR: ANIMATION SELECTOR & METRICS -->
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="title-row">
+        <span class="title-icon">🐱🗡️</span>
+        <div>
+          <h1>Sprite Review Tool</h1>
+          <div class="subtitle">Gatinho Samurai: Ecos Místicos</div>
+        </div>
+      </div>
+      <div class="char-select-wrap">
+        <label for="char-select">Personagem / Entidade</label>
+        <select id="char-select" class="select-input">
+          <option value="cat_samurai">Gatinho Samurai (Player)</option>
+          <option value="iguana_bandit">Iguana Bandit (Enemy HD)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="anim-section">
+      <div class="section-title">
+        <span>Animações Disponíveis</span>
+        <span id="anim-total-count" style="color: var(--accent-cyan);">11 clips</span>
+      </div>
+      <div class="anim-list" id="anim-list-container">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="section-title" style="margin-bottom: 6px;">
+        <span>QA Invariants (Godot 4)</span>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-box">
+          <div class="label">Canvas</div>
+          <div class="val">512 x 512 px</div>
+        </div>
+        <div class="metric-box">
+          <div class="label">Chão (Baseline)</div>
+          <div class="val">y = 430 px</div>
+        </div>
+        <div class="metric-box">
+          <div class="label">Altura Anatômica</div>
+          <div class="val">~218 px</div>
+        </div>
+        <div class="metric-box">
+          <div class="label">Margem Segura</div>
+          <div class="val">[20, 492] px</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA -->
+  <main id="main-container">
+    <!-- TOP TOOLBAR -->
+    <header id="top-bar">
+      <!-- Guides & QA Overlays -->
+      <div class="toolbar-group">
+        <span class="toolbar-label">Guias QA:</span>
+        <button id="btn-guide-baseline" class="btn active" title="Alternar Linha do Chão (y=430px)">
+          📏 Chão (430px)
+        </button>
+        <button id="btn-guide-bounds" class="btn active" title="Alternar Bounding Box e Margens Seguras [20, 492]">
+          🔲 Margem [20,492]
+        </button>
+        <button id="btn-guide-cross" class="btn" title="Alternar Mira Central (256, 256)">
+          ➕ Centro
+        </button>
+      </div>
+
+      <!-- Onion Skinning Controls -->
+      <div class="toolbar-group">
+        <span class="toolbar-label">Onion Skin:</span>
+        <button id="btn-onion-toggle" class="btn" title="Ativar/Desativar Onion Skinning (Tecla O)">
+          🧅 Onion Skin
+        </button>
+        <div class="btn-group" id="onion-mode-group">
+          <button class="btn active" data-mode="both" title="Quadro Anterior e Próximo">±1</button>
+          <button class="btn" data-mode="prev" title="Apenas Quadro Anterior">Ant</button>
+          <button class="btn" data-mode="next" title="Apenas Quadro Próximo">Próx</button>
+        </div>
+        <input type="range" id="onion-opacity" min="0.1" max="0.8" step="0.05" value="0.35" style="width: 60px;" title="Opacidade do Onion Skin">
+      </div>
+
+      <!-- Background Switcher -->
+      <div class="toolbar-group">
+        <span class="toolbar-label">Fundo:</span>
+        <div class="bg-badge bg-checker active" data-bg="checker" title="Checkerboard Transparente"></div>
+        <div class="bg-badge bg-dark-color" data-bg="#121212" title="Dark (#121212)"></div>
+        <div class="bg-badge bg-light-color" data-bg="#ffffff" title="Light (#FFFFFF)"></div>
+        <div class="bg-badge bg-green-color" data-bg="#00FF00" title="Pure Green (#00FF00 - Chroma Key Despill)"></div>
+        <input type="color" id="custom-bg-color" value="#12141f" style="width: 24px; height: 24px; border: none; background: transparent; cursor: pointer;" title="Cor Customizada">
+      </div>
+
+      <!-- Mirror & Export -->
+      <div class="toolbar-group">
+        <button id="btn-flip" class="btn" title="Inverter Horizontalmente (Tecla F)">
+          🔄 Espelhar
+        </button>
+        <button id="btn-download" class="btn" title="Baixar Frame Atual (PNG)">
+          💾 Salvar PNG
+        </button>
+      </div>
+    </header>
+
+    <!-- STAGE VIEWPORT -->
+    <section id="stage-container">
+      <div class="hud-overlay">
+        <div class="hud-row">
+          <span class="hud-label">Animação:</span>
+          <span class="hud-val" id="hud-anim-name">idle</span>
+        </div>
+        <div class="hud-row">
+          <span class="hud-label">Resolução:</span>
+          <span class="hud-val">512 x 512 px</span>
+        </div>
+        <div class="hud-row">
+          <span class="hud-label">FPS Nativo:</span>
+          <span class="hud-val" id="hud-fps">4.0 FPS</span>
+        </div>
+        <div class="hud-row">
+          <span class="hud-label">Cursor:</span>
+          <span class="hud-val" id="hud-coords">X: 0, Y: 0</span>
+        </div>
+      </div>
+
+      <div class="zoom-widget">
+        <button class="btn btn-icon" id="btn-zoom-out" title="Zoom Out (-)">−</button>
+        <button class="btn" id="btn-zoom-val" style="min-width: 54px; text-align: center;">100%</button>
+        <button class="btn btn-icon" id="btn-zoom-in" title="Zoom In (+)">+</button>
+        <button class="btn" id="btn-zoom-fit" title="Ajustar à Tela">Fit</button>
+        <button class="btn" id="btn-reset-view" title="Resetar Posição (Tecla R)">Reset</button>
+      </div>
+
+      <div class="qa-legend">
+        <div class="legend-item">
+          <div class="legend-color" style="background: #ff4757;"></div>
+          <span>Chão (y=430)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #00d2d3;"></div>
+          <span>Safe Margins (20-492)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #ffa502;"></div>
+          <span>Escala Anatômica (~218px)</span>
+        </div>
+      </div>
+
+      <div id="viewport">
+        <canvas id="sprite-canvas" width="512" height="512"></canvas>
+      </div>
+    </section>
+
+    <!-- BOTTOM SCRUBBER & FILMSTRIP -->
+    <footer id="bottom-bar">
+      <!-- Transport Row -->
+      <div class="transport-row">
+        <!-- Play / Step Controls -->
+        <div class="transport-controls">
+          <button id="btn-first" class="btn btn-icon" title="Primeiro Frame (Home)">|◀</button>
+          <button id="btn-prev" class="btn btn-icon" title="Frame Anterior (Seta Esquerda)">◀</button>
+          <div id="btn-play" class="btn-play" title="Play / Pause (Espaço)">▶</div>
+          <button id="btn-next" class="btn btn-icon" title="Próximo Frame (Seta Direita)">▶</button>
+          <button id="btn-last" class="btn btn-icon" title="Último Frame (End)">▶|</button>
+          <button id="btn-loop" class="btn active" title="Alternar Loop / One-Shot">🔁 Loop</button>
+        </div>
+
+        <!-- Timeline Scrubber -->
+        <div class="scrubber-wrap">
+          <input type="range" id="frame-scrubber" class="scrubber-slider" min="0" max="5" value="0" step="1">
+          <div class="frame-indicator" id="frame-indicator">1 / 6</div>
+        </div>
+
+        <!-- Speed Selector -->
+        <div class="transport-controls">
+          <span class="toolbar-label">Velocidade:</span>
+          <div class="btn-group" id="speed-btn-group">
+            <button class="btn" data-speed="0.25">0.25x</button>
+            <button class="btn" data-speed="0.5">0.5x</button>
+            <button class="btn active" data-speed="1.0">1x</button>
+            <button class="btn" data-speed="2.0">2x</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filmstrip Thumbnails Strip -->
+      <div class="filmstrip-row" id="filmstrip-container">
+        <!-- Rendered by JS -->
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    /* ==========================================================================
+       SPRITE DATABASE & CONFIGURATION
+       ========================================================================== */
+    const DATABASE = {
+      cat_samurai: {
+        name: "Gatinho Samurai (Player)",
+        frameSize: 512,
+        baselineY: 430,
+        safeBounds: { min: 20, max: 492 },
+        anatomicalHeight: 218,
+        animations: {
+          idle: {
+            title: "Idle (Repouso)",
+            frames: 6,
+            fps: 4.0,
+            loop: true,
+            folder: "../assets/frames/idle",
+            prefix: "idle_",
+            strip: "../assets/spritesheets/cat_warrior_idle.png"
+          },
+          run: {
+            title: "Run (Corrida)",
+            frames: 8,
+            fps: 8.0,
+            loop: true,
+            folder: "../assets/frames/run",
+            prefix: "run_",
+            strip: "../assets/spritesheets/cat_warrior_run.png"
+          },
+          walk: {
+            title: "Walk (Caminhada)",
+            frames: 8,
+            fps: 6.0,
+            loop: true,
+            folder: "../assets/frames/run",
+            prefix: "run_",
+            strip: "../assets/spritesheets/cat_warrior_walk.png"
+          },
+          jump: {
+            title: "Jump (Salto)",
+            frames: 5,
+            fps: 6.0,
+            loop: false,
+            folder: "../assets/frames/jump",
+            prefix: "jump_",
+            strip: "../assets/spritesheets/cat_warrior_jump.png"
+          },
+          glide: {
+            title: "Glide (Planar / Bambu)",
+            frames: 6,
+            fps: 5.0,
+            loop: true,
+            folder: "../assets/frames/glide",
+            prefix: "glide_",
+            strip: "../assets/spritesheets/cat_warrior_glide.png"
+          },
+          attack_combo: {
+            title: "Attack Combo (Combo Triplo)",
+            frames: 8,
+            fps: 11.0,
+            loop: false,
+            folder: "../assets/frames/attack_combo",
+            prefix: "attack_combo_",
+            strip: "../assets/spritesheets/cat_warrior_attack_combo.png"
+          },
+          attack_spin: {
+            title: "Attack Spin (Giro 360°)",
+            frames: 8,
+            fps: 11.0,
+            loop: false,
+            folder: "../assets/frames/attack_spin",
+            prefix: "attack_spin_",
+            strip: "../assets/spritesheets/cat_warrior_attack_spin.png"
+          },
+          attack_downslash: {
+            title: "Attack Downslash (Golpe Aéreo)",
+            frames: 8,
+            fps: 12.0,
+            loop: false,
+            folder: "../assets/frames/attack_downslash",
+            prefix: "attack_downslash_",
+            strip: "../assets/spritesheets/cat_warrior_attack_downslash.png"
+          },
+          skid: {
+            title: "Skid (Frenagem / Poeira)",
+            frames: 4,
+            fps: 8.0,
+            loop: false,
+            folder: "../assets/frames/skid",
+            prefix: "skid_",
+            strip: "../assets/spritesheets/cat_warrior_skid.png"
+          },
+          slide: {
+            title: "Slide (Deslize Baixo)",
+            frames: 4,
+            fps: 8.0,
+            loop: false,
+            folder: "../assets/frames/slide",
+            prefix: "slide_",
+            strip: "../assets/spritesheets/cat_warrior_slide.png"
+          },
+          turn: {
+            title: "Turn (Giro de Direção)",
+            frames: 4,
+            fps: 8.0,
+            loop: false,
+            folder: "../assets/frames/turn",
+            prefix: "turn_",
+            strip: "../assets/spritesheets/cat_warrior_turn.png"
+          }
+        }
+      },
+      iguana_bandit: {
+        name: "Iguana Bandit (Enemy HD)",
+        frameSize: 512,
+        baselineY: 448,
+        safeBounds: { min: 20, max: 492 },
+        anatomicalHeight: 224,
+        animations: {
+          idle: {
+            title: "Idle (Repouso)",
+            frames: 5,
+            fps: 5.0,
+            loop: true,
+            folder: "../assets/frames/iguana_hd/idle",
+            prefix: "idle_",
+            strip: "../assets/spritesheets/iguana_bandit_idle_hd.png"
+          },
+          walk: {
+            title: "Walk (Patrulha)",
+            frames: 6,
+            fps: 10.0,
+            loop: true,
+            folder: "../assets/frames/iguana_hd/walk",
+            prefix: "walk_",
+            strip: "../assets/spritesheets/iguana_bandit_walk_hd.png"
+          },
+          attack: {
+            title: "Attack (Clube / Porrete)",
+            frames: 6,
+            fps: 12.0,
+            loop: false,
+            folder: "../assets/frames/iguana_hd/attack",
+            prefix: "attack_",
+            strip: "../assets/spritesheets/iguana_bandit_attack_hd.png"
+          },
+          hurt: {
+            title: "Hurt (Dano)",
+            frames: 3,
+            fps: 10.0,
+            loop: false,
+            folder: "../assets/frames/iguana_hd/hurt",
+            prefix: "hurt_",
+            strip: "../assets/spritesheets/iguana_bandit_hurt_hd.png"
+          },
+          death: {
+            title: "Death (Morte)",
+            frames: 6,
+            fps: 8.0,
+            loop: false,
+            folder: "../assets/frames/iguana_hd/death",
+            prefix: "death_",
+            strip: "../assets/spritesheets/iguana_bandit_death_hd.png"
+          }
+        }
+      }
+    };
+
+    /* ==========================================================================
+       APP STATE
+       ========================================================================== */
+    const state = {
+      characterKey: 'cat_samurai',
+      animKey: 'idle',
+      currentFrame: 0,
+      isPlaying: true,
+      playbackSpeed: 1.0,
+      loop: true,
+      lastTimestamp: 0,
+      frameAccumulator: 0,
+
+      // Onion Skinning
+      onionSkin: false,
+      onionMode: 'both', // 'both', 'prev', 'next'
+      onionOpacity: 0.35,
+
+      // Guides
+      showBaseline: true,
+      showSafeBounds: true,
+      showCrosshair: false,
+      flippedH: false,
+
+      // Background
+      bgMode: 'checker', // 'checker', '#121212', '#ffffff', '#00FF00', custom
+
+      // Viewport Transform
+      zoom: 1.0,
+      panX: 0,
+      panY: 0,
+      isPanning: false,
+      panStartX: 0,
+      panStartY: 0,
+
+      // Cache of loaded HTMLImageElements: imageCache[charKey][animKey][frameIndex]
+      imageCache: {}
+    };
+
+    /* ==========================================================================
+       DOM ELEMENTS
+       ========================================================================== */
+    const canvas = document.getElementById('sprite-canvas');
+    const ctx = canvas.getContext('2d');
+    const viewport = document.getElementById('viewport');
+    const stageContainer = document.getElementById('stage-container');
+
+    const charSelect = document.getElementById('char-select');
+    const animListContainer = document.getElementById('anim-list-container');
+    const animTotalCount = document.getElementById('anim-total-count');
+
+    const hudAnimName = document.getElementById('hud-anim-name');
+    const hudFps = document.getElementById('hud-fps');
+    const hudCoords = document.getElementById('hud-coords');
+
+    const btnPlay = document.getElementById('btn-play');
+    const btnPrev = document.getElementById('btn-prev');
+    const btnNext = document.getElementById('btn-next');
+    const btnFirst = document.getElementById('btn-first');
+    const btnLast = document.getElementById('btn-last');
+    const btnLoop = document.getElementById('btn-loop');
+    const frameScrubber = document.getElementById('frame-scrubber');
+    const frameIndicator = document.getElementById('frame-indicator');
+    const filmstripContainer = document.getElementById('filmstrip-container');
+
+    const btnGuideBaseline = document.getElementById('btn-guide-baseline');
+    const btnGuideBounds = document.getElementById('btn-guide-bounds');
+    const btnGuideCross = document.getElementById('btn-guide-cross');
+    const btnOnionToggle = document.getElementById('btn-onion-toggle');
+    const onionOpacityInput = document.getElementById('onion-opacity');
+    const onionModeBtns = document.querySelectorAll('#onion-mode-group .btn');
+    const speedBtns = document.querySelectorAll('#speed-btn-group .btn');
+    const bgBadges = document.querySelectorAll('.bg-badge');
+    const customBgColor = document.getElementById('custom-bg-color');
+    const btnFlip = document.getElementById('btn-flip');
+    const btnDownload = document.getElementById('btn-download');
+
+    const btnZoomIn = document.getElementById('btn-zoom-in');
+    const btnZoomOut = document.getElementById('btn-zoom-out');
+    const btnZoomVal = document.getElementById('btn-zoom-val');
+    const btnZoomFit = document.getElementById('btn-zoom-fit');
+    const btnResetView = document.getElementById('btn-reset-view');
+
+    /* ==========================================================================
+       IMAGE PRELOADER PIPELINE
+       ========================================================================== */
+    function preloadAnimationImages(charKey, animKey, callback) {
+      if (!state.imageCache[charKey]) state.imageCache[charKey] = {};
+      if (state.imageCache[charKey][animKey]) {
+        if (callback) callback();
+        return;
+      }
+
+      const animData = DATABASE[charKey].animations[animKey];
+      const frames = [];
+      let loadedCount = 0;
+      const totalFrames = animData.frames;
+
+      for (let i = 0; i < totalFrames; i++) {
+        const img = new Image();
+        const primarySrc = `${animData.folder}/${animData.prefix}${i}.png`;
+        img.src = primarySrc;
+
+        img.onload = () => {
+          loadedCount++;
+          if (loadedCount === totalFrames && callback) callback();
+        };
+
+        // Fallback: In case frame individual file path differs, fallback to spritesheet slice
+        img.onerror = () => {
+          console.warn(`Frame individual ${primarySrc} falhou. Carregando strip spritesheet...`);
+          const sheetImg = new Image();
+          sheetImg.src = animData.strip;
+          sheetImg.onload = () => {
+            // Extrair frame da spritesheet horizontal
+            const frameCanvas = document.createElement('canvas');
+            frameCanvas.width = DATABASE[charKey].frameSize;
+            frameCanvas.height = DATABASE[charKey].frameSize;
+            const fctx = frameCanvas.getContext('2d');
+            fctx.drawImage(sheetImg, i * DATABASE[charKey].frameSize, 0, DATABASE[charKey].frameSize, DATABASE[charKey].frameSize, 0, 0, DATABASE[charKey].frameSize, DATABASE[charKey].frameSize);
+            
+            const fallbackImg = new Image();
+            fallbackImg.src = frameCanvas.toDataURL();
+            fallbackImg.onload = () => {
+              frames[i] = fallbackImg;
+              loadedCount++;
+              if (loadedCount === totalFrames && callback) callback();
+            };
+          };
+        };
+
+        frames.push(img);
+      }
+
+      state.imageCache[charKey][animKey] = frames;
+    }
+
+    function preloadAllForCharacter(charKey) {
+      const anims = Object.keys(DATABASE[charKey].animations);
+      anims.forEach(animKey => {
+        preloadAnimationImages(charKey, animKey);
+      });
+    }
+
+    /* ==========================================================================
+       UI INITIALIZATION & LIST RENDERING
+       ========================================================================== */
+    function renderAnimationList() {
+      const charData = DATABASE[state.characterKey];
+      const animKeys = Object.keys(charData.animations);
+      animTotalCount.textContent = `${animKeys.length} clips`;
+
+      animListContainer.innerHTML = '';
+      animKeys.forEach(key => {
+        const item = charData.animations[key];
+        const div = document.createElement('div');
+        div.className = `anim-item ${key === state.animKey ? 'active' : ''}`;
+        div.dataset.anim = key;
+        div.innerHTML = `
+          <span class="anim-name">
+            <span>${key === state.animKey ? '⚔️' : '📁'}</span>
+            <span>${key}</span>
+          </span>
+          <span class="anim-badge">${item.frames}f · ${item.fps}fps</span>
+        `;
+        div.addEventListener('click', () => switchAnimation(key));
+        animListContainer.appendChild(div);
+      });
+    }
+
+    function renderFilmstrip() {
+      const charData = DATABASE[state.characterKey];
+      const animData = charData.animations[state.animKey];
+      filmstripContainer.innerHTML = '';
+
+      const frames = state.imageCache[state.characterKey]?.[state.animKey] || [];
+
+      for (let i = 0; i < animData.frames; i++) {
+        const thumb = document.createElement('div');
+        thumb.className = `filmstrip-thumb ${i === state.currentFrame ? 'active' : ''}`;
+        thumb.dataset.frame = i;
+
+        const img = frames[i];
+        if (img && img.complete) {
+          const thumbImg = document.createElement('img');
+          thumbImg.src = img.src;
+          thumb.appendChild(thumbImg);
+        } else {
+          // Placeholder
+          const ph = document.createElement('div');
+          ph.textContent = `F${i}`;
+          ph.style.fontSize = '10px';
+          ph.style.color = '#888';
+          thumb.appendChild(ph);
+        }
+
+        const numBadge = document.createElement('span');
+        numBadge.className = 'thumb-num';
+        numBadge.textContent = `${i + 1}`;
+        thumb.appendChild(numBadge);
+
+        thumb.addEventListener('click', () => {
+          state.currentFrame = i;
+          state.isPlaying = false;
+          updateTransportUI();
+          renderStage();
+        });
+
+        filmstripContainer.appendChild(thumb);
+      }
+    }
+
+    function switchCharacter(charKey) {
+      state.characterKey = charKey;
+      const animKeys = Object.keys(DATABASE[charKey].animations);
+      state.animKey = animKeys[0];
+      state.currentFrame = 0;
+      preloadAllForCharacter(charKey);
+      preloadAnimationImages(charKey, state.animKey, () => {
+        renderFilmstrip();
+        renderStage();
+      });
+      renderAnimationList();
+      updateTransportUI();
+    }
+
+    function switchAnimation(animKey) {
+      if (state.animKey === animKey) return;
+      state.animKey = animKey;
+      state.currentFrame = 0;
+      state.frameAccumulator = 0;
+
+      // Update sidebar active classes
+      document.querySelectorAll('.anim-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.anim === animKey);
+        const iconSpan = el.querySelector('.anim-name span:first-child');
+        if (iconSpan) iconSpan.textContent = el.dataset.anim === animKey ? '⚔️' : '📁';
+      });
+
+      preloadAnimationImages(state.characterKey, animKey, () => {
+        renderFilmstrip();
+        renderStage();
+      });
+
+      updateTransportUI();
+    }
+
+    /* ==========================================================================
+       PLAYBACK & TRANSPORT SYSTEM
+       ========================================================================== */
+    function updateTransportUI() {
+      const animData = DATABASE[state.characterKey].animations[state.animKey];
+      frameScrubber.max = animData.frames - 1;
+      frameScrubber.value = state.currentFrame;
+      frameIndicator.textContent = `${state.currentFrame + 1} / ${animData.frames}`;
+      
+      btnPlay.innerHTML = state.isPlaying ? '❚❚' : '▶';
+      btnPlay.title = state.isPlaying ? 'Pause (Espaço)' : 'Play (Espaço)';
+
+      hudAnimName.textContent = `${state.animKey} (${animData.title})`;
+      const effectiveFps = (animData.fps * state.playbackSpeed).toFixed(1);
+      hudFps.textContent = `${animData.fps} FPS (Atual: ${effectiveFps} FPS)`;
+
+      // Update filmstrip active state
+      document.querySelectorAll('.filmstrip-thumb').forEach(el => {
+        el.classList.toggle('active', parseInt(el.dataset.frame, 10) === state.currentFrame);
+      });
+    }
+
+    function stepFrame(delta) {
+      const animData = DATABASE[state.characterKey].animations[state.animKey];
+      let next = state.currentFrame + delta;
+      if (next >= animData.frames) {
+        next = state.loop ? 0 : animData.frames - 1;
+      } else if (next < 0) {
+        next = state.loop ? animData.frames - 1 : 0;
+      }
+      state.currentFrame = next;
+      updateTransportUI();
+      renderStage();
+    }
+
+    /* ==========================================================================
+       CANVAS RENDERING & QA OVERLAYS
+       ========================================================================== */
+    function renderStage() {
+      const charData = DATABASE[state.characterKey];
+      const animData = charData.animations[state.animKey];
+      const frames = state.imageCache[state.characterKey]?.[state.animKey];
+
+      // Clear canvas
+      ctx.clearRect(0, 0, 512, 512);
+
+      // Save context for horizontal flip
+      ctx.save();
+      if (state.flippedH) {
+        ctx.translate(512, 0);
+        ctx.scale(-1, 1);
+      }
+
+      // --- ONION SKINNING ---
+      if (state.onionSkin && frames && frames.length > 0) {
+        const total = animData.frames;
+        
+        // Previous Frame (Cyan / Blue Tint)
+        if (state.onionMode === 'both' || state.onionMode === 'prev') {
+          const prevIdx = (state.currentFrame - 1 + total) % total;
+          const prevImg = frames[prevIdx];
+          if (prevImg && prevImg.complete) {
+            ctx.save();
+            ctx.globalAlpha = state.onionOpacity;
+            ctx.drawImage(prevImg, 0, 0, 512, 512);
+            // Tint cyan
+            ctx.globalCompositeOperation = 'source-atop';
+            ctx.fillStyle = 'rgba(0, 210, 211, 0.4)';
+            ctx.fillRect(0, 0, 512, 512);
+            ctx.restore();
+          }
+        }
+
+        // Next Frame (Orange / Red Tint)
+        if (state.onionMode === 'both' || state.onionMode === 'next') {
+          const nextIdx = (state.currentFrame + 1) % total;
+          const nextImg = frames[nextIdx];
+          if (nextImg && nextImg.complete) {
+            ctx.save();
+            ctx.globalAlpha = state.onionOpacity;
+            ctx.drawImage(nextImg, 0, 0, 512, 512);
+            // Tint magenta/orange
+            ctx.globalCompositeOperation = 'source-atop';
+            ctx.fillStyle = 'rgba(255, 71, 87, 0.4)';
+            ctx.fillRect(0, 0, 512, 512);
+            ctx.restore();
+          }
+        }
+      }
+
+      // --- MAIN CURRENT FRAME ---
+      if (frames && frames[state.currentFrame] && frames[state.currentFrame].complete) {
+        ctx.drawImage(frames[state.currentFrame], 0, 0, 512, 512);
+      } else {
+        // Loading placeholder
+        ctx.fillStyle = '#ff4757';
+        ctx.font = '16px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(`Carregando Frame ${state.currentFrame + 1}...`, 256, 256);
+      }
+
+      ctx.restore(); // Restore flip matrix before drawing HUD overlays
+
+      // --- QA GUIDES & OVERLAYS ---
+
+      // 1. Safe Margins [20, 492]
+      if (state.showSafeBounds) {
+        ctx.strokeStyle = 'rgba(0, 210, 211, 0.7)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+        ctx.strokeRect(charData.safeBounds.min, charData.safeBounds.min, charData.safeBounds.max - charData.safeBounds.min, charData.safeBounds.max - charData.safeBounds.min);
+
+        // Safe margin label
+        ctx.fillStyle = 'rgba(0, 210, 211, 0.9)';
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText('Safe Bounds [20, 492]', charData.safeBounds.min + 4, charData.safeBounds.min + 12);
+      }
+
+      // 2. Ground Baseline (y = 430px)
+      if (state.showBaseline) {
+        const baseY = charData.baselineY;
+
+        // Ground Floor Tint
+        ctx.fillStyle = 'rgba(255, 71, 87, 0.08)';
+        ctx.fillRect(0, baseY, 512, 512 - baseY);
+
+        // Ground Baseline Line
+        ctx.strokeStyle = '#ff4757';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 3]);
+        ctx.beginPath();
+        ctx.moveTo(0, baseY);
+        ctx.lineTo(512, baseY);
+        ctx.stroke();
+
+        // Baseline Glow & Badge
+        ctx.fillStyle = '#ff4757';
+        ctx.font = 'bold 11px monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(`Ground Baseline: y=${baseY}px`, 502, baseY - 6);
+
+        // 3. Anatomical Height Reference Bar (~218px)
+        const topY = baseY - charData.anatomicalHeight;
+        ctx.strokeStyle = '#ffa502';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([2, 2]);
+
+        // Bracket top line
+        ctx.beginPath();
+        ctx.moveTo(40, topY);
+        ctx.lineTo(80, topY);
+        // Vertical height measure line
+        ctx.moveTo(60, topY);
+        ctx.lineTo(60, baseY);
+        // Bracket bottom line
+        ctx.moveTo(40, baseY);
+        ctx.lineTo(80, baseY);
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffa502';
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText(`1:1 Scale ~${charData.anatomicalHeight}px`, 66, (topY + baseY) / 2);
+      }
+
+      // 4. Center Crosshair
+      if (state.showCrosshair) {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(256, 0); ctx.lineTo(256, 512);
+        ctx.moveTo(0, 256); ctx.lineTo(512, 256);
+        ctx.stroke();
+      }
+
+      ctx.setLineDash([]); // Reset dash
+    }
+
+    /* ==========================================================================
+       MAIN ANIMATION LOOP
+       ========================================================================== */
+    function animationLoop(timestamp) {
+      if (!state.lastTimestamp) state.lastTimestamp = timestamp;
+      const dt = (timestamp - state.lastTimestamp) / 1000;
+      state.lastTimestamp = timestamp;
+
+      if (state.isPlaying) {
+        const animData = DATABASE[state.characterKey].animations[state.animKey];
+        const effectiveFps = animData.fps * state.playbackSpeed;
+        const frameDuration = 1 / effectiveFps;
+
+        state.frameAccumulator += dt;
+        if (state.frameAccumulator >= frameDuration) {
+          const framesToAdvance = Math.floor(state.frameAccumulator / frameDuration);
+          state.frameAccumulator %= frameDuration;
+
+          let nextFrame = state.currentFrame + framesToAdvance;
+          if (nextFrame >= animData.frames) {
+            if (state.loop) {
+              nextFrame %= animData.frames;
+            } else {
+              nextFrame = animData.frames - 1;
+              state.isPlaying = false;
+            }
+          }
+          state.currentFrame = nextFrame;
+          updateTransportUI();
+          renderStage();
+        }
+      }
+
+      requestAnimationFrame(animationLoop);
+    }
+
+    /* ==========================================================================
+       VIEWPORT ZOOM & PAN TRANSFORMS
+       ========================================================================== */
+    function updateViewportTransform() {
+      viewport.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
+      btnZoomVal.textContent = `${Math.round(state.zoom * 100)}%`;
+    }
+
+    function setZoom(newZoom) {
+      state.zoom = Math.max(0.25, Math.min(4.0, newZoom));
+      updateViewportTransform();
+    }
+
+    function fitViewport() {
+      const containerW = stageContainer.clientWidth - 40;
+      const containerH = stageContainer.clientHeight - 40;
+      const scale = Math.min(containerW / 512, containerH / 512, 1.8);
+      state.zoom = scale;
+      state.panX = 0;
+      state.panY = 0;
+      updateViewportTransform();
+    }
+
+    function resetViewport() {
+      state.zoom = 1.0;
+      state.panX = 0;
+      state.panY = 0;
+      updateViewportTransform();
+    }
+
+    /* ==========================================================================
+       EVENT LISTENERS & BINDINGS
+       ========================================================================== */
+    function setupEventListeners() {
+      // Character switch
+      charSelect.addEventListener('change', (e) => switchCharacter(e.target.value));
+
+      // Playback Controls
+      btnPlay.addEventListener('click', () => {
+        state.isPlaying = !state.isPlaying;
+        updateTransportUI();
+      });
+
+      btnPrev.addEventListener('click', () => {
+        state.isPlaying = false;
+        stepFrame(-1);
+      });
+
+      btnNext.addEventListener('click', () => {
+        state.isPlaying = false;
+        stepFrame(1);
+      });
+
+      btnFirst.addEventListener('click', () => {
+        state.isPlaying = false;
+        state.currentFrame = 0;
+        updateTransportUI();
+        renderStage();
+      });
+
+      btnLast.addEventListener('click', () => {
+        state.isPlaying = false;
+        const total = DATABASE[state.characterKey].animations[state.animKey].frames;
+        state.currentFrame = total - 1;
+        updateTransportUI();
+        renderStage();
+      });
+
+      btnLoop.addEventListener('click', () => {
+        state.loop = !state.loop;
+        btnLoop.classList.toggle('active', state.loop);
+      });
+
+      frameScrubber.addEventListener('input', (e) => {
+        state.isPlaying = false;
+        state.currentFrame = parseInt(e.target.value, 10);
+        updateTransportUI();
+        renderStage();
+      });
+
+      // Speed Buttons
+      speedBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          speedBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          state.playbackSpeed = parseFloat(btn.dataset.speed);
+          updateTransportUI();
+        });
+      });
+
+      // Onion Skinning
+      btnOnionToggle.addEventListener('click', () => {
+        state.onionSkin = !state.onionSkin;
+        btnOnionToggle.classList.toggle('active', state.onionSkin);
+        renderStage();
+      });
+
+      onionModeBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          onionModeBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          state.onionMode = btn.dataset.mode;
+          renderStage();
+        });
+      });
+
+      onionOpacityInput.addEventListener('input', (e) => {
+        state.onionOpacity = parseFloat(e.target.value);
+        renderStage();
+      });
+
+      // Guides
+      btnGuideBaseline.addEventListener('click', () => {
+        state.showBaseline = !state.showBaseline;
+        btnGuideBaseline.classList.toggle('active', state.showBaseline);
+        renderStage();
+      });
+
+      btnGuideBounds.addEventListener('click', () => {
+        state.showSafeBounds = !state.showSafeBounds;
+        btnGuideBounds.classList.toggle('active', state.showSafeBounds);
+        renderStage();
+      });
+
+      btnGuideCross.addEventListener('click', () => {
+        state.showCrosshair = !state.showCrosshair;
+        btnGuideCross.classList.toggle('active', state.showCrosshair);
+        renderStage();
+      });
+
+      btnFlip.addEventListener('click', () => {
+        state.flippedH = !state.flippedH;
+        btnFlip.classList.toggle('active', state.flippedH);
+        renderStage();
+      });
+
+      // Background Selector
+      bgBadges.forEach(badge => {
+        badge.addEventListener('click', () => {
+          bgBadges.forEach(b => b.classList.remove('active'));
+          badge.classList.add('active');
+          const bg = badge.dataset.bg;
+          if (bg === 'checker') {
+            stageContainer.style.background = '#12141f';
+            canvas.className = 'bg-checker';
+            canvas.style.backgroundColor = '';
+          } else {
+            stageContainer.style.background = '#12141f';
+            canvas.className = '';
+            canvas.style.backgroundColor = bg;
+          }
+        });
+      });
+
+      customBgColor.addEventListener('input', (e) => {
+        bgBadges.forEach(b => b.classList.remove('active'));
+        canvas.className = '';
+        canvas.style.backgroundColor = e.target.value;
+      });
+
+      // Zoom & Pan
+      btnZoomIn.addEventListener('click', () => setZoom(state.zoom + 0.25));
+      btnZoomOut.addEventListener('click', () => setZoom(state.zoom - 0.25));
+      btnZoomFit.addEventListener('click', fitViewport);
+      btnResetView.addEventListener('click', resetViewport);
+
+      stageContainer.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 0.15 : -0.15;
+        setZoom(state.zoom + delta);
+      });
+
+      stageContainer.addEventListener('mousedown', (e) => {
+        if (e.button === 0 || e.button === 1) { // Left or middle click
+          state.isPanning = true;
+          state.panStartX = e.clientX - state.panX;
+          state.panStartY = e.clientY - state.panY;
+        }
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (state.isPanning) {
+          state.panX = e.clientX - state.panStartX;
+          state.panY = e.clientY - state.panStartY;
+          updateViewportTransform();
+        }
+
+        // Canvas pixel coordinate hover tracker
+        const rect = canvas.getBoundingClientRect();
+        if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+          const pixelX = Math.floor((e.clientX - rect.left) / (rect.width / 512));
+          const pixelY = Math.floor((e.clientY - rect.top) / (rect.height / 512));
+          hudCoords.textContent = `X: ${pixelX}, Y: ${pixelY}`;
+        }
+      });
+
+      window.addEventListener('mouseup', () => {
+        state.isPanning = false;
+      });
+
+      // Save PNG Export
+      btnDownload.addEventListener('click', () => {
+        const link = document.createElement('a');
+        link.download = `${state.characterKey}_${state.animKey}_f${state.currentFrame}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+
+      // Keyboard Shortcuts
+      window.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+        switch (e.code) {
+          case 'Space':
+            e.preventDefault();
+            state.isPlaying = !state.isPlaying;
+            updateTransportUI();
+            break;
+          case 'ArrowLeft':
+          case 'KeyA':
+            e.preventDefault();
+            state.isPlaying = false;
+            stepFrame(-1);
+            break;
+          case 'ArrowRight':
+          case 'KeyD':
+            e.preventDefault();
+            state.isPlaying = false;
+            stepFrame(1);
+            break;
+          case 'Home':
+            state.isPlaying = false;
+            state.currentFrame = 0;
+            updateTransportUI();
+            renderStage();
+            break;
+          case 'End':
+            state.isPlaying = false;
+            state.currentFrame = DATABASE[state.characterKey].animations[state.animKey].frames - 1;
+            updateTransportUI();
+            renderStage();
+            break;
+          case 'KeyO':
+            state.onionSkin = !state.onionSkin;
+            btnOnionToggle.classList.toggle('active', state.onionSkin);
+            renderStage();
+            break;
+          case 'KeyG':
+            state.showBaseline = !state.showBaseline;
+            state.showSafeBounds = !state.showSafeBounds;
+            btnGuideBaseline.classList.toggle('active', state.showBaseline);
+            btnGuideBounds.classList.toggle('active', state.showSafeBounds);
+            renderStage();
+            break;
+          case 'KeyF':
+            state.flippedH = !state.flippedH;
+            btnFlip.classList.toggle('active', state.flippedH);
+            renderStage();
+            break;
+          case 'KeyR':
+            resetViewport();
+            break;
+          case 'Digit1':
+            speedBtns[0].click();
+            break;
+          case 'Digit2':
+            speedBtns[1].click();
+            break;
+          case 'Digit3':
+            speedBtns[2].click();
+            break;
+          case 'Digit4':
+            speedBtns[3].click();
+            break;
+        }
+      });
+    }
+
+    /* ==========================================================================
+       STARTUP
+       ========================================================================== */
+    function init() {
+      // Set initial canvas background
+      canvas.className = 'bg-checker';
+      
+      renderAnimationList();
+      setupEventListeners();
+      updateTransportUI();
+      updateViewportTransform();
+
+      // Preload default character assets
+      preloadAllForCharacter('cat_samurai');
+      preloadAnimationImages('cat_samurai', 'idle', () => {
+        renderFilmstrip();
+        renderStage();
+      });
+
+      requestAnimationFrame(animationLoop);
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
