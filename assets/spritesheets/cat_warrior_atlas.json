@@ -31,6 +31,18 @@
       "loop": true,
       "strip": "cat_warrior_glide.png"
     },
+    "attack_slash": {
+      "frames": 6,
+      "fps": 12.0,
+      "loop": false,
+      "strip": "cat_warrior_attack_slash.png"
+    },
+    "attack": {
+      "frames": 6,
+      "fps": 12.0,
+      "loop": false,
+      "strip": "cat_warrior_attack.png"
+    },
     "attack_combo": {
       "frames": 8,
       "fps": 14.0,
