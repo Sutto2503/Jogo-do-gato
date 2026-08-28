@@ -1,4 +1,4 @@
-[gd_resource type="SpriteFrames" load_steps=70 format=3 uid="uid://cmk4b7n6v8e2p"]
+[gd_resource type="SpriteFrames" load_steps=71 format=3 uid="uid://cmk4b7n6v8e2p"]
 
 [ext_resource type="Texture2D" path="res://assets/frames/idle/idle_0.png" id="1_idle_idle_0"]
 [ext_resource type="Texture2D" path="res://assets/frames/idle/idle_1.png" id="2_idle_idle_1"]
@@ -32,43 +32,44 @@
 [ext_resource type="Texture2D" path="res://assets/frames/glide/glide_2.png" id="30_glide_glide_2"]
 [ext_resource type="Texture2D" path="res://assets/frames/glide/glide_3.png" id="31_glide_glide_3"]
 [ext_resource type="Texture2D" path="res://assets/frames/glide/glide_4.png" id="32_glide_glide_4"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_combo/attack_combo_0.png" id="33_attack_attack_combo_0"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_combo/attack_combo_1.png" id="34_attack_attack_combo_1"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_combo/attack_combo_2.png" id="35_attack_attack_combo_2"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_combo/attack_combo_3.png" id="36_attack_attack_combo_3"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_combo/attack_combo_4.png" id="37_attack_attack_combo_4"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_combo/attack_combo_5.png" id="38_attack_attack_combo_5"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_combo/attack_combo_6.png" id="39_attack_attack_combo_6"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_combo/attack_combo_7.png" id="40_attack_attack_combo_7"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_spin/attack_spin_0.png" id="41_attack_spin_attack_spin_0"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_spin/attack_spin_1.png" id="42_attack_spin_attack_spin_1"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_spin/attack_spin_2.png" id="43_attack_spin_attack_spin_2"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_spin/attack_spin_3.png" id="44_attack_spin_attack_spin_3"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_spin/attack_spin_4.png" id="45_attack_spin_attack_spin_4"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_spin/attack_spin_5.png" id="46_attack_spin_attack_spin_5"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_spin/attack_spin_6.png" id="47_attack_spin_attack_spin_6"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_spin/attack_spin_7.png" id="48_attack_spin_attack_spin_7"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_downslash/attack_downslash_0.png" id="49_downslash_attack_downslash_0"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_downslash/attack_downslash_1.png" id="50_downslash_attack_downslash_1"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_downslash/attack_downslash_2.png" id="51_downslash_attack_downslash_2"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_downslash/attack_downslash_3.png" id="52_downslash_attack_downslash_3"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_downslash/attack_downslash_4.png" id="53_downslash_attack_downslash_4"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_downslash/attack_downslash_5.png" id="54_downslash_attack_downslash_5"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_downslash/attack_downslash_6.png" id="55_downslash_attack_downslash_6"]
-[ext_resource type="Texture2D" path="res://assets/frames/attack_downslash/attack_downslash_7.png" id="56_downslash_attack_downslash_7"]
-[ext_resource type="Texture2D" path="res://assets/frames/skid/skid_0.png" id="57_skid_skid_0"]
-[ext_resource type="Texture2D" path="res://assets/frames/skid/skid_1.png" id="58_skid_skid_1"]
-[ext_resource type="Texture2D" path="res://assets/frames/skid/skid_2.png" id="59_skid_skid_2"]
-[ext_resource type="Texture2D" path="res://assets/frames/skid/skid_3.png" id="60_skid_skid_3"]
-[ext_resource type="Texture2D" path="res://assets/frames/slide/slide_0.png" id="61_slide_slide_0"]
-[ext_resource type="Texture2D" path="res://assets/frames/slide/slide_1.png" id="62_slide_slide_1"]
-[ext_resource type="Texture2D" path="res://assets/frames/slide/slide_2.png" id="63_slide_slide_2"]
-[ext_resource type="Texture2D" path="res://assets/frames/slide/slide_3.png" id="64_slide_slide_3"]
-[ext_resource type="Texture2D" path="res://assets/frames/turn/turn_0.png" id="65_turn_turn_0"]
-[ext_resource type="Texture2D" path="res://assets/frames/turn/turn_1.png" id="66_turn_turn_1"]
-[ext_resource type="Texture2D" path="res://assets/frames/turn/turn_2.png" id="67_turn_turn_2"]
-[ext_resource type="Texture2D" path="res://assets/frames/turn/turn_3.png" id="68_turn_turn_3"]
-[ext_resource type="Texture2D" path="res://assets/frames/jump/jump_2.png" id="69_fall_frame"]
+[ext_resource type="Texture2D" path="res://assets/frames/glide/glide_5.png" id="33_glide_glide_5"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_combo/attack_combo_0.png" id="34_attack_attack_combo_0"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_combo/attack_combo_1.png" id="35_attack_attack_combo_1"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_combo/attack_combo_2.png" id="36_attack_attack_combo_2"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_combo/attack_combo_3.png" id="37_attack_attack_combo_3"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_combo/attack_combo_4.png" id="38_attack_attack_combo_4"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_combo/attack_combo_5.png" id="39_attack_attack_combo_5"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_combo/attack_combo_6.png" id="40_attack_attack_combo_6"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_combo/attack_combo_7.png" id="41_attack_attack_combo_7"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_spin/attack_spin_0.png" id="42_attack_spin_attack_spin_0"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_spin/attack_spin_1.png" id="43_attack_spin_attack_spin_1"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_spin/attack_spin_2.png" id="44_attack_spin_attack_spin_2"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_spin/attack_spin_3.png" id="45_attack_spin_attack_spin_3"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_spin/attack_spin_4.png" id="46_attack_spin_attack_spin_4"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_spin/attack_spin_5.png" id="47_attack_spin_attack_spin_5"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_spin/attack_spin_6.png" id="48_attack_spin_attack_spin_6"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_spin/attack_spin_7.png" id="49_attack_spin_attack_spin_7"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_downslash/attack_downslash_0.png" id="50_downslash_attack_downslash_0"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_downslash/attack_downslash_1.png" id="51_downslash_attack_downslash_1"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_downslash/attack_downslash_2.png" id="52_downslash_attack_downslash_2"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_downslash/attack_downslash_3.png" id="53_downslash_attack_downslash_3"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_downslash/attack_downslash_4.png" id="54_downslash_attack_downslash_4"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_downslash/attack_downslash_5.png" id="55_downslash_attack_downslash_5"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_downslash/attack_downslash_6.png" id="56_downslash_attack_downslash_6"]
+[ext_resource type="Texture2D" path="res://assets/frames/attack_downslash/attack_downslash_7.png" id="57_downslash_attack_downslash_7"]
+[ext_resource type="Texture2D" path="res://assets/frames/skid/skid_0.png" id="58_skid_skid_0"]
+[ext_resource type="Texture2D" path="res://assets/frames/skid/skid_1.png" id="59_skid_skid_1"]
+[ext_resource type="Texture2D" path="res://assets/frames/skid/skid_2.png" id="60_skid_skid_2"]
+[ext_resource type="Texture2D" path="res://assets/frames/skid/skid_3.png" id="61_skid_skid_3"]
+[ext_resource type="Texture2D" path="res://assets/frames/slide/slide_0.png" id="62_slide_slide_0"]
+[ext_resource type="Texture2D" path="res://assets/frames/slide/slide_1.png" id="63_slide_slide_1"]
+[ext_resource type="Texture2D" path="res://assets/frames/slide/slide_2.png" id="64_slide_slide_2"]
+[ext_resource type="Texture2D" path="res://assets/frames/slide/slide_3.png" id="65_slide_slide_3"]
+[ext_resource type="Texture2D" path="res://assets/frames/turn/turn_0.png" id="66_turn_turn_0"]
+[ext_resource type="Texture2D" path="res://assets/frames/turn/turn_1.png" id="67_turn_turn_1"]
+[ext_resource type="Texture2D" path="res://assets/frames/turn/turn_2.png" id="68_turn_turn_2"]
+[ext_resource type="Texture2D" path="res://assets/frames/turn/turn_3.png" id="69_turn_turn_3"]
+[ext_resource type="Texture2D" path="res://assets/frames/jump/jump_2.png" id="70_fall_frame"]
 
 [resource]
 animations = [
@@ -202,6 +203,9 @@ animations = [
 }, {
 "duration": 1.0,
 "texture": ExtResource("32_glide_glide_4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("33_glide_glide_5")
 }
 ],
 "loop": true,
@@ -212,28 +216,28 @@ animations = [
 "frames": [
 {
 "duration": 1.0,
-"texture": ExtResource("33_attack_attack_combo_0")
+"texture": ExtResource("34_attack_attack_combo_0")
 }, {
 "duration": 1.0,
-"texture": ExtResource("34_attack_attack_combo_1")
+"texture": ExtResource("35_attack_attack_combo_1")
 }, {
 "duration": 1.0,
-"texture": ExtResource("35_attack_attack_combo_2")
+"texture": ExtResource("36_attack_attack_combo_2")
 }, {
 "duration": 1.0,
-"texture": ExtResource("36_attack_attack_combo_3")
+"texture": ExtResource("37_attack_attack_combo_3")
 }, {
 "duration": 1.0,
-"texture": ExtResource("37_attack_attack_combo_4")
+"texture": ExtResource("38_attack_attack_combo_4")
 }, {
 "duration": 1.0,
-"texture": ExtResource("38_attack_attack_combo_5")
+"texture": ExtResource("39_attack_attack_combo_5")
 }, {
 "duration": 1.0,
-"texture": ExtResource("39_attack_attack_combo_6")
+"texture": ExtResource("40_attack_attack_combo_6")
 }, {
 "duration": 1.0,
-"texture": ExtResource("40_attack_attack_combo_7")
+"texture": ExtResource("41_attack_attack_combo_7")
 }
 ],
 "loop": false,
@@ -244,28 +248,28 @@ animations = [
 "frames": [
 {
 "duration": 1.0,
-"texture": ExtResource("41_attack_spin_attack_spin_0")
+"texture": ExtResource("42_attack_spin_attack_spin_0")
 }, {
 "duration": 1.0,
-"texture": ExtResource("42_attack_spin_attack_spin_1")
+"texture": ExtResource("43_attack_spin_attack_spin_1")
 }, {
 "duration": 1.0,
-"texture": ExtResource("43_attack_spin_attack_spin_2")
+"texture": ExtResource("44_attack_spin_attack_spin_2")
 }, {
 "duration": 1.0,
-"texture": ExtResource("44_attack_spin_attack_spin_3")
+"texture": ExtResource("45_attack_spin_attack_spin_3")
 }, {
 "duration": 1.0,
-"texture": ExtResource("45_attack_spin_attack_spin_4")
+"texture": ExtResource("46_attack_spin_attack_spin_4")
 }, {
 "duration": 1.0,
-"texture": ExtResource("46_attack_spin_attack_spin_5")
+"texture": ExtResource("47_attack_spin_attack_spin_5")
 }, {
 "duration": 1.0,
-"texture": ExtResource("47_attack_spin_attack_spin_6")
+"texture": ExtResource("48_attack_spin_attack_spin_6")
 }, {
 "duration": 1.0,
-"texture": ExtResource("48_attack_spin_attack_spin_7")
+"texture": ExtResource("49_attack_spin_attack_spin_7")
 }
 ],
 "loop": false,
@@ -276,28 +280,28 @@ animations = [
 "frames": [
 {
 "duration": 1.0,
-"texture": ExtResource("49_downslash_attack_downslash_0")
+"texture": ExtResource("50_downslash_attack_downslash_0")
 }, {
 "duration": 1.0,
-"texture": ExtResource("50_downslash_attack_downslash_1")
+"texture": ExtResource("51_downslash_attack_downslash_1")
 }, {
 "duration": 1.0,
-"texture": ExtResource("51_downslash_attack_downslash_2")
+"texture": ExtResource("52_downslash_attack_downslash_2")
 }, {
 "duration": 1.0,
-"texture": ExtResource("52_downslash_attack_downslash_3")
+"texture": ExtResource("53_downslash_attack_downslash_3")
 }, {
 "duration": 1.0,
-"texture": ExtResource("53_downslash_attack_downslash_4")
+"texture": ExtResource("54_downslash_attack_downslash_4")
 }, {
 "duration": 1.0,
-"texture": ExtResource("54_downslash_attack_downslash_5")
+"texture": ExtResource("55_downslash_attack_downslash_5")
 }, {
 "duration": 1.0,
-"texture": ExtResource("55_downslash_attack_downslash_6")
+"texture": ExtResource("56_downslash_attack_downslash_6")
 }, {
 "duration": 1.0,
-"texture": ExtResource("56_downslash_attack_downslash_7")
+"texture": ExtResource("57_downslash_attack_downslash_7")
 }
 ],
 "loop": false,
@@ -308,16 +312,16 @@ animations = [
 "frames": [
 {
 "duration": 1.0,
-"texture": ExtResource("57_skid_skid_0")
+"texture": ExtResource("58_skid_skid_0")
 }, {
 "duration": 1.0,
-"texture": ExtResource("58_skid_skid_1")
+"texture": ExtResource("59_skid_skid_1")
 }, {
 "duration": 1.0,
-"texture": ExtResource("59_skid_skid_2")
+"texture": ExtResource("60_skid_skid_2")
 }, {
 "duration": 1.0,
-"texture": ExtResource("60_skid_skid_3")
+"texture": ExtResource("61_skid_skid_3")
 }
 ],
 "loop": false,
@@ -328,16 +332,16 @@ animations = [
 "frames": [
 {
 "duration": 1.0,
-"texture": ExtResource("61_slide_slide_0")
+"texture": ExtResource("62_slide_slide_0")
 }, {
 "duration": 1.0,
-"texture": ExtResource("62_slide_slide_1")
+"texture": ExtResource("63_slide_slide_1")
 }, {
 "duration": 1.0,
-"texture": ExtResource("63_slide_slide_2")
+"texture": ExtResource("64_slide_slide_2")
 }, {
 "duration": 1.0,
-"texture": ExtResource("64_slide_slide_3")
+"texture": ExtResource("65_slide_slide_3")
 }
 ],
 "loop": false,
@@ -348,16 +352,16 @@ animations = [
 "frames": [
 {
 "duration": 1.0,
-"texture": ExtResource("65_turn_turn_0")
+"texture": ExtResource("66_turn_turn_0")
 }, {
 "duration": 1.0,
-"texture": ExtResource("66_turn_turn_1")
+"texture": ExtResource("67_turn_turn_1")
 }, {
 "duration": 1.0,
-"texture": ExtResource("67_turn_turn_2")
+"texture": ExtResource("68_turn_turn_2")
 }, {
 "duration": 1.0,
-"texture": ExtResource("68_turn_turn_3")
+"texture": ExtResource("69_turn_turn_3")
 }
 ],
 "loop": false,
@@ -368,7 +372,7 @@ animations = [
 "frames": [
 {
 "duration": 1.0,
-"texture": ExtResource("69_fall_frame")
+"texture": ExtResource("70_fall_frame")
 }
 ],
 "loop": true,
