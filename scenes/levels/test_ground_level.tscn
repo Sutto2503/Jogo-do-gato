@@ -58,3 +58,4 @@ shape = SubResource("RectangleShape2D_straight_ground")
 
 [node name="Player" parent="." unique_id=9574565 instance=ExtResource("2_player")]
 position = Vector2(400, 638)
+safe_margin = 8.0

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gatinho Samurai - Interactive Sprite Review Tool</title>
+  <script src="../assets_bundle.js"></script>
   <style>
     :root {
       --bg-dark: #0f111a;
@@ -875,6 +876,15 @@
             prefix: "glide_",
             strip: "../assets/spritesheets/cat_warrior_glide.png"
           },
+          attack_thrust: {
+            title: "Attack Thrust (Estocada / Tsuki [Z])",
+            frames: 6,
+            fps: 12.0,
+            loop: false,
+            folder: "../assets/frames/attack_thrust",
+            prefix: "attack_thrust_",
+            strip: "../assets/spritesheets/cat_warrior_attack_thrust.png"
+          },
           attack_slash: {
             title: "Attack Slash (Iaijutsu / 1-Click [Z])",
             frames: 6,
@@ -883,6 +893,15 @@
             folder: "../assets/frames/attack_slash",
             prefix: "attack_slash_",
             strip: "../assets/spritesheets/cat_warrior_attack_slash.png"
+          },
+          attack: {
+            title: "Attack Default (Ataque Padrão)",
+            frames: 6,
+            fps: 12.0,
+            loop: false,
+            folder: "../assets/frames/attack",
+            prefix: "attack_",
+            strip: "../assets/spritesheets/cat_warrior_attack.png"
           },
           attack_combo: {
             title: "Attack Combo (Combo Triplo)",
@@ -1086,6 +1105,23 @@
       if (!state.imageCache[charKey]) state.imageCache[charKey] = {};
       if (state.imageCache[charKey][animKey]) {
         if (callback) callback();
+        return;
+      }
+
+      if (charKey === 'cat_samurai' && window.ASSETS_BUNDLE && window.ASSETS_BUNDLE[animKey] && window.ASSETS_BUNDLE[animKey].length > 0) {
+        const bundleFrames = window.ASSETS_BUNDLE[animKey];
+        const bFrames = [];
+        let bLoaded = 0;
+        for (let i = 0; i < bundleFrames.length; i++) {
+          const img = new Image();
+          img.onload = () => {
+            bLoaded++;
+            if (bLoaded === bundleFrames.length && callback) callback();
+          };
+          img.src = bundleFrames[i];
+          bFrames.push(img);
+        }
+        state.imageCache[charKey][animKey] = bFrames;
         return;
       }
 
