@@ -3,19 +3,19 @@
   "animations": {
     "idle": {
       "frames": 6,
-      "fps": 4.0,
+      "fps": 5.0,
       "loop": true,
       "strip": "cat_warrior_idle.png"
     },
     "run": {
       "frames": 8,
-      "fps": 8.0,
+      "fps": 12.0,
       "loop": true,
       "strip": "cat_warrior_run.png"
     },
     "walk": {
       "frames": 8,
-      "fps": 6.0,
+      "fps": 8.0,
       "loop": true,
       "strip": "cat_warrior_walk.png"
     },
@@ -27,25 +27,25 @@
     },
     "glide": {
       "frames": 6,
-      "fps": 5.0,
+      "fps": 7.0,
       "loop": true,
       "strip": "cat_warrior_glide.png"
     },
     "attack_combo": {
       "frames": 8,
-      "fps": 11.0,
+      "fps": 14.0,
       "loop": false,
       "strip": "cat_warrior_attack_combo.png"
     },
     "attack_spin": {
       "frames": 8,
-      "fps": 11.0,
+      "fps": 14.0,
       "loop": false,
       "strip": "cat_warrior_attack_spin.png"
     },
     "attack_downslash": {
       "frames": 8,
-      "fps": 12.0,
+      "fps": 15.0,
       "loop": false,
       "strip": "cat_warrior_attack_downslash.png"
     },
