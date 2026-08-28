@@ -2122,7 +2122,7 @@ class MetroidvaniaWorldGame {
       const fh = frameImg.naturalHeight || 512;
       
       // Escala 1:1 rigorosa para canvas uniforme de 512x512
-      const baseScale = 0.425;
+      const baseScale = 0.70;
 
       ctx.save();
       // Pivot exatamente na base dos pés
@@ -2137,8 +2137,8 @@ class MetroidvaniaWorldGame {
 
       const dw = fw * baseScale;
       const dh = fh * baseScale;
-      // Alinhamento anatômico do chão: y=446 em 512px
-      const footAnchorY = dh * (446.0 / 512.0);
+      // Alinhamento anatômico do chão: y=430 em 512px
+      const footAnchorY = dh * (430.0 / 512.0);
 
       ctx.imageSmoothingEnabled = false;
       ctx.drawImage(frameImg, -dw / 2, -footAnchorY, dw, dh);

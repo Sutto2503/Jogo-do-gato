@@ -16,8 +16,8 @@ collision_mask = 5
 script = ExtResource("1_script")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1862566751]
-position = Vector2(0, -34)
-scale = Vector2(0.18, 0.18)
+position = Vector2(0, -54)
+scale = Vector2(0.31, 0.31)
 sprite_frames = ExtResource("2_frames")
 animation = &"idle"
 autoplay = "idle"

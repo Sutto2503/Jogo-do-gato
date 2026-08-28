@@ -74,7 +74,7 @@ var combo_step: int = 0
 @export var attack_duration: float = 0.72
 
 # Game Feel: Squash & Stretch & Screen Shake & Look-Ahead
-var base_sprite_scale: Vector2 = Vector2(0.18, 0.18)
+var base_sprite_scale: Vector2 = Vector2(0.31, 0.31)
 var current_squash: Vector2 = Vector2(1.0, 1.0)
 var screen_shake_intensity: float = 0.0
 var screen_shake_timer: float = 0.0
