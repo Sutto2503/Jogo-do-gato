@@ -74,17 +74,45 @@ Esta skill governa os padrões de **qualidade visual, fluidez de movimentação,
 
 ---
 
-## 📐 Tabela Mestre de Animações (Godot 4)
+## 🛡️ Regra de Qualidade Obrigatória: Subagente Avaliador (QA Technical Art Gatekeeper)
 
-| Animação | Qtd Quadros | FPS Base | Resolução Canvas | Tipo de Loop | Comportamento Especial |
-| :--- | :---: | :---: | :---: | :---: | :--- |
-| `idle` | 6 | 5.0 | 256x256 | Loop | Respiração rítmica e oscilação de cauda |
-| `run` | 8 | 11.0 | 256x256 | Loop | Passadas cadenciadas com flutter de capa |
-| `jump` | 5 | 8.0 | 256x256 | Clamp | Fases de subida, ápice e queda |
-| `glide` | 5 | 6.0 | 512x512 / 256 | Loop | Queda lenta, pipa de bambu e vento |
-| `attack` | 8 | 14.0 | 512x512 | Clamp | Combo de corte horizontal com arco de fogo |
-| `attack_spin` | 8 | 14.0 | 512x512 | Clamp | Giro 360° com anel completo de chamas |
-| `downslash` | 8 | 16.0 | 512x512 | Clamp | Mergulho vertical com rebote pogo |
-| `skid` | 4 | 10.0 | 256x256 | Clamp | Frenagem rápida após corrida |
-| `slide` | 4 | 10.0 | 256x256 | Clamp | Deslize sob obstáculos baixos |
-| `turn` | 4 | 10.0 | 256x256 | Clamp | Transição rápida de inversão de direção |
+**REGRA RIGOROSA**: NENHUM lote de sprites pode ser entregue, comitado ou apresentado ao usuário sem antes ser **auditado e formalmente aprovado por um subagente avaliador especializado**.
+
+### 🔍 Os 9 Critérios Rigorosos de Aceitação (Zero Tolerance):
+
+1. **📐 Resolução & Canvas Padronizado (512x512 px)**:
+   - 100% dos frames devem ser PNGs $RGBA$ na dimensão exata de $512 \times 512\text{ px}$.
+2. **✂️ Zero Clipping (Margem de Segurança $\ge 20\text{ px}$)**:
+   - O conteúdo visível deve residir estritamente dentro de $[x \in [20, 492], y \in [20, 492]]$. Nenhum pixel com $\alpha > 15$ pode tocar a borda $[0, 511]$.
+3. **🚫 Zero Invasão de Vizinhos (*Zero Neighbor Intrusion*)**:
+   - Isolamento topológico estrito por componentes conectados (`scipy.ndimage.label`). Proibido qualquer fragmento ou pixel de personagens vizinhos da folha de IA.
+4. **🐾 Escala Anatômica 1:1 Invariável (~218 px)**:
+   - A altura corporal do gatinho (patas à cabeça em repouso) deve medir rigorosamente **~218 px ($\pm 5\text{ px}$)**, idêntica ao `Idle` e `Run`.
+5. **⚓ Linha de Base do Solo (*Ground Baseline* $y = 430\text{ px}$)**:
+   - Todas as poses de contato com o chão devem ter a base das patas ancorada exatamente em **$y = 430\text{ px}$ ($\pm 2\text{ px}$)**.
+6. **🧹 Pureza de Chroma Key & Despill (#00FF00)**:
+   - Zero halos ou linhas verdes residuais nas bordas ($G > 1.3 \times \max(R, B)$ com $\alpha > 50$).
+7. **⚔️ Arquitetura Desacoplada (Personagem Puro)**:
+   - Sprites do personagem devem conter **exclusivamente o corpo e a katana física de aço**. Efeitos de fogo, arcos de corte e magia residem separadamente em `assets/vfx/`.
+8. **🔄 Continuidade de Animação (12 Princípios & 8 Frames)**:
+   - Vetor de movimento cronológico ininterrupto (Antecipação $\rightarrow$ Saque $\rightarrow$ Extensão Máxima $\rightarrow$ Follow-Through $\rightarrow$ Guarda).
+9. **📦 Sincronização Atômica das 4 Pastas & Godot 4 Engine**:
+   - Validação da existência e integridade de:
+     1. `assets/frames/<animacao>/` (PNGs isolados)
+     2. `assets/spritesheets/` (Tiras horizontais + `cat_warrior_atlas.json`)
+     3. `assets/previews/` (GIFs animados + `showcase_combat.gif`)
+     4. `scenes/player/player_sprite_frames.tres` (Configurado e funcional no Godot 4)
+     5. `scenes/vfx/slash_vfx.tres` (Biblioteca de efeitos de corte)
+
+---
+
+### 🤖 Como Invocar e Executar o Subagente Avaliador:
+
+O agente principal deve rodar o script de auditoria automatizado:
+```bash
+python .agents/skills/character-animator/scripts/audit_sprites.py
+```
+
+**Protocolo de Auto-Refinamento**:
+- Se o script retornar `Exit Code 1` ou apontar qualquer falha: A entrega é **AUTOMATICAMENTE REJEITADA**.
+- O agente deve corrigir os frames defeituosos imediatamente e re-executar a auditoria até atingir **100% de Aprovação (Exit Code 0)** antes de notificar o usuário ou commitar.
